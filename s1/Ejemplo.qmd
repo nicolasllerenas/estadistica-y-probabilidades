@@ -1,0 +1,62 @@
+---
+title: "1raCLASE"
+format: html
+editor: visual
+---
+
+## Primeros pasos
+
+Vamos a crear un objeto llamado $a$ cuyo valor sea igual a 5 ($a=5$) y otro objeto llamado $b$ cuyo valor sea igual a 23 ($b=23$). Luego sumaremos estos valores.
+
+```{r}
+a <- 3
+b <- 5
+a*b
+
+```
+
+## Primer ejercicio
+
+Crearemos un objeto llamado c con valor igual a 28 y multiplicaremos por el valor de b que fue creado anteriormente.
+
+```{r}
+c <- 28
+c * b
+```
+
+Llamar la librería `ggplot2`
+
+```{r}
+library(ggplot2)
+```
+
+Sea la variable $y$ y esta la elevamos al cuadrado $y^2$. Ahora sacaremos la raíz cuadrada de y $$\sqrt{y}$$
+
+Ahora vamos a crear una columna, también llamada vector al que nombraremos "edad"
+
+```{r}
+edad <- c(13,15,13,12,16,11,13,17,11,15)
+```
+
+Ahora para calcular el promedio de esas edades utilizaremos el comando `mean`
+
+```{r}
+mean(edad)
+```
+Creamos una nueva variable
+```{r}
+edad_mult <-2*edad
+edad_mult
+```
+
+Ahora calcularemos el promedio de esta nueva variable
+
+```{r}
+mean(edad_mult)
+```
+
+Ahora podemos pedir un cuadro resumen básico de esta nueva variable, para esto usaremos `summary`
+```{r}
+summary(edad_mult)
+```
+
