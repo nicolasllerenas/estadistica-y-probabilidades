@@ -1,0 +1,793 @@
+---
+title: "Tarea_2"
+format: html
+editor: visual
+---
+
+## Tarea 02
+
+```{r}
+library(ggplot2)
+library(readr)
+library(dplyr)
+library(vcd)
+library(knitr)
+library(kableExtra)
+library(stringr)
+DF1 <- read.csv2("C:/Users/nllerenas/OneDrive/Documentos/Nicolas/UTEC/2024-2/estadistica-y-probabilidades/s8/Tarea2/cuytopia_limpio.csv", sep =",", na.strings = "")
+
+DF2 <- read.csv2("C:/Users/nllerenas/OneDrive/Documentos/Nicolas/UTEC/2024-2/estadistica-y-probabilidades/s8/Tarea2/Reporte.csv", sep =",", na.strings = "")
+```
+
+```{r}
+DF3 <- DF2
+DF1 <- DF1 %>%
+  mutate_all(~ na_if(., "NA"))
+head(DF1)
+```
+
+#### Pregunta 1
+
+```{r}
+total_filas <- nrow(DF1)
+total_columnas <- ncol(DF1)
+
+
+# Verificar el número total de datos faltantes en el dataframe
+total_na <- sum(is.na(DF1))
+# Verificar el número de filas incompletas (con al menos un NA)
+filas_incompletas <- sum(!complete.cases(DF1))
+
+# Calcular el porcentaje de datos faltantes
+total_datos <- nrow(DF1) * ncol(DF1)
+porcentaje_faltantes <- (total_na / total_datos) * 100
+
+# Calcular el porcentaje de filas incompletas
+porcentaje_filas_incompletas <- (filas_incompletas / nrow(DF1)) * 100
+
+# Variable con más datos faltantes
+variable_mas_faltantes <- colnames(DF1)[which.max(colSums(is.na(DF1)))]
+
+# Tamaño efectivo de la variable con más datos faltantes
+tamaño_efectivo <- nrow(DF1) - sum(is.na(DF1[[variable_mas_faltantes]]))
+
+# Mostrar resultados
+cat("Número de Filas:", total_filas, "\n")
+cat("Número de Columnas:", total_columnas, "\n")
+cat("Datos faltantes:", total_na, "\n")
+cat("Filas incompletas:", filas_incompletas, "\n")
+cat("Porcentaje de datos faltantes:", porcentaje_faltantes, "%\n")
+cat("Porcentaje de filas incompletas:", porcentaje_filas_incompletas, "%\n")
+cat("Variable con más datos faltantes:", variable_mas_faltantes, "\n")
+cat("Tamaño efectivo de la variable con más datos faltantes:", tamaño_efectivo, "\n")
+
+
+```
+
+#### Pregunta 2
+
+```{r}
+# Supongamos que quieres añadir una columna llamada 'Reporte' con un valor constante o calculado
+DF2 <- cbind(DF2, Reporte = "Reporte") # Cambia "Nombre del Reporte" según sea necesario
+
+# Mostrar el dataframe actualizado
+head(DF2)
+
+```
+
+```{r}
+DF2 <- DF2 %>%
+  mutate(
+    # Extraer el Serial
+    Equipo = str_extract(value, "Ser\\. No.: ([0-9A-Z-]+)") %>% str_remove("Ser. No.: "),
+    # Extraer la Fecha
+    Fecha = str_extract(value, "Date: (\\d{4}-\\d{2}-\\d{2})") %>% str_remove("Date: "),  
+    # Extraer la Hora
+    Tiempo = str_extract(value, "(\\d{2}:\\d{2}:\\d{2}\\.\\d{2})"), 
+    # Extraer el Status
+    Reporte = str_extract(value, "Status: ([^ ]+)") %>% str_remove("Status: "),  
+    # Crear la columna Error como lógica
+    Error = if_else(Reporte == "ERR", TRUE, FALSE)  # TRUE si Status es ERR, FALSE si es OK
+  ) %>%
+  select(Equipo, Fecha, Tiempo, Reporte, Error)  # Seleccionar solo las columnas deseadas
+
+# Mostrar el dataframe final
+print(DF2)
+```
+
+```{r}
+unique(DF2$Reporte)
+nrow(filter(DF2,Error == FALSE))
+```
+
+```{r}
+sum(complete.cases(DF2$Tiempo))
+```
+
+```{r}
+table(DF2$Equipo)
+```
+
+#### Pregunta 3
+
+```{r}
+table(DF2$Equipo)
+round(nrow(filter(DF2,Reporte == "ERR"))/nrow(DF2)*100,2)
+```
+
+```{r}
+head(filter(DF2, Equipo == "6543BF2-X"))
+```
+
+```{r}
+tail(filter(DF2, Equipo == "6543BF2-X"))
+```
+
+#### Pregunta 4
+
+```{r}
+DF1$Peso <- as.numeric(DF1$Peso)
+DF1$Largo <- as.numeric(DF1$Largo)
+DF1$Cintura <- as.numeric(DF1$Cintura)
+
+# Supongamos que tienes un data frame llamado 'DF1'
+# con columnas Peso, Largo, Cintura
+
+# Función para calcular el coeficiente de variación (CV)
+coef_var <- function(x) {
+  return(100 * sd(x, na.rm = TRUE) / mean(x, na.rm = TRUE))
+}
+
+# Calcular coeficiente de variación original de cada variable
+cv_peso_original <- coef_var(DF1$Peso)
+cv_largo_original <- coef_var(DF1$Largo)
+cv_cintura_original <- coef_var(DF1$Cintura)
+
+# Imputar valores faltantes con la media
+DF1_imputado <- DF1
+DF1_imputado$Peso[is.na(DF1_imputado$Peso)] <- mean(DF1$Peso, na.rm = TRUE)
+DF1_imputado$Largo[is.na(DF1_imputado$Largo)] <- mean(DF1$Largo, na.rm = TRUE)
+DF1_imputado$Cintura[is.na(DF1_imputado$Cintura)] <- mean(DF1$Cintura, na.rm = TRUE)
+
+# Calcular coeficiente de variación después de la imputación
+cv_peso_imputado <- coef_var(DF1_imputado$Peso)
+cv_largo_imputado <- coef_var(DF1_imputado$Largo)
+cv_cintura_imputado <- coef_var(DF1_imputado$Cintura)
+
+
+# Calcular reducción del coeficiente de variación
+reduccion_peso <- (cv_peso_original - cv_peso_imputado) 
+reduccion_largo <- (cv_largo_original - cv_largo_imputado) 
+reduccion_cintura <- (cv_cintura_original - cv_cintura_imputado) 
+
+# Decidir si se imputa según el criterio de reducción menor al 5%
+if (reduccion_peso < 5) {
+  cat("No imputaremos la variable Peso\n")
+} else {
+  cat("Imputaremos la variable Peso\n")
+}
+
+if (reduccion_largo < 5) {
+  cat("No imputaremos la variable Largo\n")
+} else {
+  cat("Imputaremos la variable Largo\n")
+}
+
+if (reduccion_cintura < 5) {
+  cat("No imputaremos la variable Cintura\n")
+} else {
+  cat("Imputaremos la variable Cintura\n")
+}
+
+# Mostrar las reducciones calculadas
+cat("Reducción en CV de Peso:", reduccion_peso, "%\n")
+cat("Reducción en CV de Largo:", reduccion_largo, "%\n")
+cat("Reducción en CV de Cintura:", reduccion_cintura, "%\n")
+
+
+# Imputar valores faltantes con la mediana
+DF1_imputado <- DF1
+DF1_imputado$Peso[is.na(DF1_imputado$Peso)] <- median(DF1$Peso, na.rm = TRUE)
+DF1_imputado$Largo[is.na(DF1_imputado$Largo)] <- median(DF1$Largo, na.rm = TRUE)
+DF1_imputado$Cintura[is.na(DF1_imputado$Cintura)] <- median(DF1$Cintura, na.rm = TRUE)
+
+# Calcular coeficiente de variación después de la imputación
+cv_peso_imputado <- coef_var(DF1_imputado$Peso)
+cv_largo_imputado <- coef_var(DF1_imputado$Largo)
+cv_cintura_imputado <- coef_var(DF1_imputado$Cintura)
+
+
+# Calcular reducción del coeficiente de variación
+reduccion_peso <- (cv_peso_original - cv_peso_imputado) 
+reduccion_largo <- (cv_largo_original - cv_largo_imputado) 
+reduccion_cintura <- (cv_cintura_original - cv_cintura_imputado) 
+
+# Decidir si se imputa según el criterio de reducción menor al 5%
+if (reduccion_peso < 5) {
+  cat("No imputaremos la variable Peso\n")
+} else {
+  cat("Imputaremos la variable Peso\n")
+}
+
+if (reduccion_largo < 5) {
+  cat("No imputaremos la variable Largo\n")
+} else {
+  cat("Imputaremos la variable Largo\n")
+}
+
+if (reduccion_cintura < 5) {
+  cat("No imputaremos la variable Cintura\n")
+} else {
+  cat("Imputaremos la variable Cintura\n")
+}
+
+# Mostrar las reducciones calculadas
+cat("Reducción en CV de Peso:", reduccion_peso, "%\n")
+cat("Reducción en CV de Largo:", reduccion_largo, "%\n")
+cat("Reducción en CV de Cintura:", reduccion_cintura, "%\n")
+```
+
+#### Pregunta 5
+
+```{r}
+DF2$Fecha <- as.Date(DF2$Fecha, format = "%Y-%m-%d")
+
+barplot(table(DF2$Error, format(DF2$Fecha, "%y-%m-%d")), las = 3, col = c("cyan", "orange"), border = NA)
+
+```
+
+```{r}
+table(format(DF2$Fecha, "%y-%m-%d"),DF2$Error)
+```
+
+#### Pregunta 6
+
+```{r}
+
+r <- function(x) {
+  formatC(x, format = "f", digits = 2)  # Formatear con 2 decimales
+}
+
+bcol <- c("white", "black", "Peru", "Peru", "Peru"
+          , "firebrick", "saddlebrown", "Dimgray", "pink")
+
+tcol <- c("gray", "black", "Peru", "Peru", "black"
+          , "firebrick", "saddlebrown", "Dimgray", "pink")
+
+text(barplot(sort(table(DF1$Color), decreasing = TRUE)
+        , cex.names = 0.6
+        , col = bcol
+        , border = tcol
+        , angle = 45
+        , density = c(0, 1000, 1000, 25.4, 25.4, 1000, 1000, 1000, 1000)
+        , ylim = c(0, 1800)
+        , main = "Distribución de colores en la muestra"
+        , sub = paste("Tamaño muestral:", nrow(DF1), "cuyes.")
+        , xlab = "color del pelaje (ver libreta de códigos para más detalles)"
+        , ylab = "cantidad"
+        )
+     , sort(table(DF1$Color), decreasing = TRUE)
+     , paste(r(sort(table(DF1$Color), decreasing = TRUE)/nrow(DF1)*100), "%")
+     , col = tcol
+     , pos = 3
+     , cex = 0.6
+)
+
+```
+
+```{r}
+table(DF1$Color)
+```
+
+```{r}
+round(prop.table(table(DF1$Color))*100,2)
+```
+
+#### Pregunta 7
+
+```{r}
+Tabla <- table(DF1$Sexo, 
+              case_match(DF1$Color
+                         , c("tricolor", "rojizo"
+                             , "marrón oscuro", "gris", "rosa"
+                             ) ~ "otro pelaje"
+                         , DF1$Color ~ DF1$Color
+                         )
+              )[, c(1, 3, 2, 5, 4)] 
+text(barplot(Tabla
+             , col = c("red", "blue")
+             , ylim = c(0, 1800)
+             , cex.names = 0.8
+             , cex.axis = 0.8
+             , ylab = ""
+             )
+     , t(Tabla 
+         + matrix(nrow = 2, ncol = 5, c(rep(0, 5), Tabla[1, ]), byrow = TRUE)
+         ), paste(sprintf("%5.2f",round(t(Tabla/nrow(DF1)*100))), "%")
+     , col = "white"
+     , pos = 1
+     , cex = 0.8
+     )
+legend("topright", legend = c("machos", "hembras"), fill = c("blue", "red"), bty = "n")
+title("Distribución de sexos y color de pelaje en la muestra"
+      , sub = sprintf("tamaño muestral: %d\n machos: %d hembras: %d"
+                      , nrow(DF1)
+                      , sum(DF1$Sexo == "macho")
+                      , nrow(DF1)-sum(DF$Sexo == "macho")
+                      )
+      , cex.sub = 0.8
+      )
+title(xlab = "color de pelaje", ylab = "cantidad", line = 2)
+```
+
+```{r}
+table(DF1$Color,DF1$Sexo)
+```
+
+```{r}
+sum(is.na(DF1$Sexo))
+```
+
+#### Pregunta 8
+
+```{r}
+install.packages('tableHTML')
+```
+
+```{r}
+library(tableHTML)
+result <- DF1 %>% 
+  group_by(Raza, Sexo) %>% 
+  summarise(Cantidad = n(), .groups = 'drop') %>%
+  select(Raza, Sexo, Cantidad) %>%
+  tidyr::pivot_wider(names_from = Sexo, values_from = Cantidad) %>%
+  mutate(hembra = ifelse(is.na(hembra), 0, hembra)
+         , macho = ifelse(is.na(macho), 0, macho)) %>%
+  arrange(desc(hembra/(hembra + macho))) %>%
+  tableHTML(rownames = FALSE, widths = c(70, 70, 70), caption = "Tabla 1: raza vs. sexo") %>%
+  add_css_caption(css = list(c('font-weight'), c('bold'))) %>%
+  add_css_table(css = list(c('border'), c('0px solid lightgray'))) %>%
+  add_css_header(css = list(c('text-align'), c('right')), c(2, 3)) %>%
+  add_css_column(css = list(c('text-align'), c('right')), c(2, 3))
+
+# Imprimir la tabla directamente
+print(result)
+```
+
+```{r}
+table(DF1$Raza,DF1$Sexo)
+```
+
+#### Pregunta 9
+
+```{r}
+Tabla <- table(DF1$Raza, DF1$Sexo)
+Ind <- order(Tabla[ ,1]/rowSums(Tabla), decreasing = TRUE)
+mosaicplot((Tabla[Ind, ]/rowSums(Tabla)[Ind]*100)
+           , col = c("red", "blue")
+           , main = "Figura A: raza vs. sexo"
+           , ylab = "sexo"
+           , xlab = "raza"
+           )
+```
+
+```{r}
+table(DF1$Raza, DF1$Sexo)
+```
+
+```{r}
+sum(is.na(DF1$Raza))
+```
+
+#### Pregunta 10
+
+```{r}
+Tabla <- table(DF1$Raza, DF1$Sexo)
+Ind <- order(Tabla[ ,1]/rowSums(Tabla), decreasing = TRUE)
+mosaicplot(Tabla[Ind, ]
+           , col = c("red", "blue")
+           , cex.axis = 0.4
+           , main = "Figura B: raza vs. sexo"
+           , ylab = "sexo"
+           , xlab = "raza"
+           )
+```
+
+```{r}
+table(DF1$Raza,DF1$Sexo)
+```
+
+#### Pregunta 11:
+
+```{r}
+DF1$Peso<- as.numeric(DF1$Peso)
+nfilas <- nrow(DF1$Peso)
+fcompl_peso <- sum(complete.cases(DF1$Peso))
+sd_peso <- sd(DF1$Peso, na.rm = TRUE)
+mean_peso <- mean(DF1$Peso, na.rm = TRUE)
+
+
+cat("Tamaño Efectivo:", fcompl_peso, "\n")
+cat("Coeficiente de Variación:", round(sd_peso/mean_peso,2),"\n")
+
+```
+
+```{r}
+summary(DF1$Peso)
+```
+
+```{r}
+hist(DF1$Peso, breaks = 15, main = "Histograma de Peso", xlab = "Peso", col = "lightblue", border = "black")
+
+```
+
+```{r}
+# Supongamos que la variable se llama 'Largo'
+largo <- na.omit(DF1$Peso)
+
+# Tamaño efectivo
+n <- length(largo)  # tamaño efectivo
+
+# Promedio
+mean_largo <- mean(largo)
+
+# Desviación estándar
+sd_largo <- sd(largo)
+
+# Coeficiente de variación
+cv_largo <- sd_largo / mean_largo
+
+# Imprimir resultados
+cat("Tamaño efectivo:", n, "\n")
+cat("Promedio:", mean_largo, "\n")
+cat("Desviación estándar:", sd_largo, "\n")
+cat("Coeficiente de variación:", cv_largo, "\n")
+
+
+# Porcentajes de valores dentro de 1, 2 y 3 desviaciones estándar
+within_1_sd <- mean(largo >= (mean_largo - sd_largo) & largo <= (mean_largo + sd_largo)) * 100
+within_2_sd <- mean(largo >= (mean_largo - 2 * sd_largo) & largo <= (mean_largo + 2 * sd_largo)) * 100
+within_3_sd <- mean(largo >= (mean_largo - 3 * sd_largo) & largo <= (mean_largo + 3 * sd_largo)) * 100
+
+cat("Porcentaje dentro de 1 desviación estándar:", within_1_sd, "%\n")
+cat("Porcentaje dentro de 2 desviaciones estándar:", within_2_sd, "%\n")
+cat("Porcentaje dentro de 3 desviaciones estándar:", within_3_sd, "%\n")
+
+
+```
+
+#### Pregunta 12
+
+```{r}
+DF1$Largo<- as.numeric(DF1$Largo)
+nfilas <- nrow(DF1$Largo)
+fcompl_peso <- sum(complete.cases(DF1$Largo))
+sd_peso <- sd(DF1$Largo, na.rm = TRUE)
+mean_peso <- mean(DF1$Largo, na.rm = TRUE)
+
+
+cat("Tamaño Efectivo:", fcompl_peso, "\n")
+cat("Coeficiente de Variación:", round(sd_peso/mean_peso,2),"\n")
+```
+
+```{r}
+hist(DF1$Largo, breaks = 15, main = "Histograma de Peso", xlab = "Peso", col = "lightblue", border = "black")
+```
+
+```{r}
+# Supongamos que la variable se llama 'Largo'
+largo <- na.omit(DF1$Largo)
+
+# Tamaño efectivo
+n <- length(largo)  # tamaño efectivo
+
+# Promedio
+mean_largo <- mean(largo)
+
+# Desviación estándar
+sd_largo <- sd(largo)
+
+# Coeficiente de variación
+cv_largo <- sd_largo / mean_largo
+
+# Imprimir resultados
+cat("Tamaño efectivo:", n, "\n")
+cat("Promedio:", mean_largo, "\n")
+cat("Desviación estándar:", sd_largo, "\n")
+cat("Coeficiente de variación:", cv_largo, "\n")
+
+
+# Porcentajes de valores dentro de 1, 2 y 3 desviaciones estándar
+within_1_sd <- mean(largo >= (mean_largo - sd_largo) & largo <= (mean_largo + sd_largo)) * 100
+within_2_sd <- mean(largo >= (mean_largo - 2 * sd_largo) & largo <= (mean_largo + 2 * sd_largo)) * 100
+within_3_sd <- mean(largo >= (mean_largo - 3 * sd_largo) & largo <= (mean_largo + 3 * sd_largo)) * 100
+
+cat("Porcentaje dentro de 1 desviación estándar:", round(within_1_sd,2), "%\n")
+cat("Porcentaje dentro de 2 desviaciones estándar:", round(within_2_sd,2), "%\n")
+cat("Porcentaje dentro de 3 desviaciones estándar:", round(within_3_sd,2), "%\n")
+```
+
+#### Pregunta 13
+
+```{r}
+DF1$Cintura<- as.numeric(DF1$Cintura)
+nfilas <- nrow(DF1$Cintura)
+fcompl_peso <- sum(complete.cases(DF1$Cintura))
+sd_peso <- sd(DF1$Cintura, na.rm = TRUE)
+mean_peso <- mean(DF1$Cintura, na.rm = TRUE)
+
+
+cat("Tamaño Efectivo:", fcompl_peso, "\n")
+cat("Coeficiente de Variación:", round(sd_peso/mean_peso,2),"\n")
+```
+
+```{r}
+hist(DF1$Cintura, breaks = 15, main = "Histograma de Cintura", xlab = "Cintura", col = "lightblue", border = "black")
+```
+
+```{r}
+# Supongamos que la variable se llama 'Largo'
+largo <- na.omit(DF1$Cintura)
+
+# Tamaño efectivo
+n <- length(largo)  # tamaño efectivo
+
+# Promedio
+mean_largo <- mean(largo)
+
+# Desviación estándar
+sd_largo <- sd(largo)
+
+# Coeficiente de variación
+cv_largo <- sd_largo / mean_largo
+
+# Imprimir resultados
+cat("Tamaño efectivo:", n, "\n")
+cat("Promedio:", mean_largo, "\n")
+cat("Desviación estándar:", sd_largo, "\n")
+cat("Coeficiente de variación:", cv_largo, "\n")
+
+
+# Porcentajes de valores dentro de 1, 2 y 3 desviaciones estándar
+within_1_sd <- mean(largo >= (mean_largo - sd_largo) & largo <= (mean_largo + sd_largo)) * 100
+within_2_sd <- mean(largo >= (mean_largo - 2 * sd_largo) & largo <= (mean_largo + 2 * sd_largo)) * 100
+within_3_sd <- mean(largo >= (mean_largo - 3 * sd_largo) & largo <= (mean_largo + 3 * sd_largo)) * 100
+
+cat("Porcentaje dentro de 1 desviación estándar:", round(within_1_sd,2), "%\n")
+cat("Porcentaje dentro de 2 desviaciones estándar:", round(within_2_sd,2), "%\n")
+cat("Porcentaje dentro de 3 desviaciones estándar:", round(within_3_sd,2), "%\n")
+```
+
+#### Pregunta 14
+
+```{r}
+DF1$Edad<- as.numeric(DF1$Edad)
+nfilas <- nrow(DF1$Edad)
+fcompl_peso <- sum(complete.cases(DF1$Edad))
+sd_peso <- sd(DF1$Edad, na.rm = TRUE)
+mean_peso <- mean(DF1$Edad, na.rm = TRUE)
+
+
+cat("Tamaño Efectivo:", fcompl_peso, "\n")
+cat("Coeficiente de Variación:", round(sd_peso/mean_peso,2),"\n")
+```
+
+```{r}
+hist(DF1$Edad, breaks = 15, main = "Histograma de Edad", xlab = "Edad", col = "lightblue", border = "black")
+```
+
+```{r}
+# Supongamos que la variable se llama 'Largo'
+largo <- na.omit(DF1$Edad)
+
+# Tamaño efectivo
+n <- length(largo)  # tamaño efectivo
+
+# Promedio
+mean_largo <- mean(largo)
+
+# Desviación estándar
+sd_largo <- sd(largo)
+
+# Coeficiente de variación
+cv_largo <- sd_largo / mean_largo
+
+# Imprimir resultados
+cat("Tamaño efectivo:", n, "\n")
+cat("Promedio:", mean_largo, "\n")
+cat("Desviación estándar:", sd_largo, "\n")
+cat("Coeficiente de variación:", cv_largo, "\n")
+
+
+# Porcentajes de valores dentro de 1, 2 y 3 desviaciones estándar
+within_1_sd <- mean(largo >= (mean_largo - sd_largo) & largo <= (mean_largo + sd_largo)) * 100
+within_2_sd <- mean(largo >= (mean_largo - 2 * sd_largo) & largo <= (mean_largo + 2 * sd_largo)) * 100
+within_3_sd <- mean(largo >= (mean_largo - 3 * sd_largo) & largo <= (mean_largo + 3 * sd_largo)) * 100
+
+cat("Porcentaje dentro de 1 desviación estándar:", round(within_1_sd,2), "%\n")
+cat("Porcentaje dentro de 2 desviaciones estándar:", round(within_2_sd,2), "%\n")
+cat("Porcentaje dentro de 3 desviaciones estándar:", round(within_3_sd,2), "%\n")
+```
+
+#### Pregunta 15
+
+```{r}
+sum(complete.cases(DF1$Talla))
+table(DF1$Talla)
+```
+
+```{r}
+# Supongamos que tienes un dataframe llamado df y una columna 'categoria'
+df_clean <- na.omit(DF1$Talla)  # Eliminar los valores NA
+df_clean <- factor(df_clean, levels = c("flaco", "sano", "gordo", "obeso"), ordered = T)
+frecuencias <- table(df_clean)  # Frecuencia de cada categoría
+proporciones <- frecuencias / sum(frecuencias)  # Calcular proporciones
+proporciones_acumuladas <- cumsum(proporciones)  # Frecuencia acumulada
+proporciones_acumuladas
+
+cuartil_1 <- names(proporciones_acumuladas[proporciones_acumuladas >= 0.25])[1]
+cuartil_2 <- names(proporciones_acumuladas[proporciones_acumuladas >= 0.50])[1]
+cuartil_3 <- names(proporciones_acumuladas[proporciones_acumuladas >= 0.75])[1]
+
+cat("Cuartil 1:", cuartil_1, "\n")
+cat("Cuartil 2:", cuartil_2, "\n")
+cat("Cuartil 3:", cuartil_3, "\n")
+
+
+
+```
+
+#### Pregunta 16
+
+```{r}
+sum(complete.cases(DF2$Equipo))
+table(DF2$Equipo)
+```
+
+#### Pregunta 17
+
+```{r}
+plot(DF1[,c("Edad", "Peso", "Largo", "Cintura")], pch = 20, col = rgb(0, 0, 0, 0.05))
+
+```
+
+#### Pregunta 18
+
+```{r}
+cor(DF1[,c("Edad", "Peso", "Largo", "Cintura")], use = "complete.obs")
+
+```
+
+#### Pregunta 19
+
+```{r}
+Sel <- (DF1$Raza == "americano") | (DF1$Raza == "andino") | (DF1$Raza == "híbrido") | (DF1$Raza == "peruano") 
+Var <- DF1$Largo
+boxplot(Var[Sel] ~ DF1$Sexo[Sel]*DF1$Raza[Sel]
+        , varwidth = TRUE
+        , las = 3
+        , notch = TRUE
+        , col = c("blue", "red")
+        , ylab = "largo (cm)"
+        , xlab = ""
+        , cex.axis = 0.5
+        , main = "Largo en términos del sexo y la raza"
+        , sub = paste("Total de", sum(Sel & !is.na(Var)), "cuyes")
+        )
+legend("topright"
+       , legend = c("hembra", "macho")
+       , fill = c("blue", "red")
+       , cex = 0.8
+       , bty = "n"
+       )
+```
+
+#### Pregunta 20
+
+```{r}
+resultados <- str_split_fixed(DF3$value, pattern = " - ", n = 3)
+
+DF_separado <- as.data.frame(resultados, stringsAsFactors = FALSE)
+
+# Renombrar las columnas para que sean más descriptivas
+colnames(DF_separado) <- c("Equipo", "Fecha", "Status")
+
+DF_separado$Equipo <- gsub("Ser. No.:", "", DF_separado$Equipo)
+DF_separado$Fecha <- gsub("Date: ", "", DF_separado$Fecha)
+DF_separado$Status <- gsub("Status: ", "", DF_separado$Status)
+
+# Ver el resultado final
+DF_separado
+```
+
+```{r}
+DF_separado$Fecha <- as.POSIXct(DF_separado$Fecha, format = "%Y-%m-%d %H:%M:%S", tz = "UTC")  # Ajusta el formato según tus datos
+
+# 2. Imprimir fechas para verificar
+print(head(DF_separado %>% select(Equipo, Fecha)))
+
+# 3. Ordenar por Equipo y Fecha, y calcular Tiempo2
+DF_separado <- DF_separado %>%
+  arrange(Equipo, Fecha) %>%  # Ordenar por Equipo y Fecha
+  group_by(Equipo) %>%
+  mutate(Tiempo2 = ifelse(!is.na(Fecha) & !is.na(lag(Fecha)), 
+                           as.numeric(difftime(Fecha, lag(Fecha), units = "mins")), 
+                           NA)) %>%  # Solo calcular si ambos son no NA
+  ungroup()
+
+# 4. Reemplazar los valores mayores a 45 minutos con NA
+DF_separado$Tiempo2[DF_separado$Tiempo2 > 45] <- NA
+
+# 5. Verifica el resultado
+print(head(DF_separado))
+```
+
+```{r}
+DF_separado
+```
+
+```{r}
+summary(DF_separado$Tiempo2)
+```
+
+```{r}
+# Supongamos que tu data frame se llama DF2 y que la columna "Tiempo" contiene los valores en minutos.
+
+# Convertir la columna "Tiempo" a numérica si no lo está
+DF_separado$Tiempo2 <- as.numeric(DF_separado$Tiempo2)
+
+# Remover posibles valores NA
+DF2_sinNA <- DF_separado[!is.na(DF_separado$Tiempo2), ]
+
+# 1. Calcular el coeficiente de variación (CV)
+promedio <- mean(DF2_sinNA$Tiempo2)
+desviacion_estandar <- sd(DF2_sinNA$Tiempo2)
+cv <- (desviacion_estandar / promedio) * 100  # Coeficiente de variación en porcentaje
+
+# 2. Calcular el promedio, mediana y desviación estándar
+promedio <- mean(DF2_sinNA$Tiempo2)
+mediana <- median(DF2_sinNA$Tiempo2)
+desviacion_estandar <- sd(DF2_sinNA$Tiempo2)
+
+# 3. Calcular el rango intercuartil (IQR)
+rango_intercuartil <- IQR(DF2_sinNA$Tiempo2)
+
+# 4. Calcular el rango
+rango <- range(DF2_sinNA$Tiempo2)  # Devuelve el mínimo y el máximo
+rango_total <- diff(rango)  # Diferencia entre el máximo y el mínimo
+
+# Imprimir los resultados
+cat("Coeficiente de variación (CV):", round(cv, 2), "%\n")
+cat("Promedio:", round(promedio, 2), "minutos\n")
+cat("Mediana:", round(mediana, 2), "minutos\n")
+cat("Desviación estándar:", round(desviacion_estandar, 2), "minutos\n")
+cat("Rango intercuartil (IQR):", round(rango_intercuartil, 2), "minutos\n")
+cat("Rango total:", round(rango_total, 2), "minutos\n")
+
+```
+
+```{r}
+sd(DF_separado$Tiempo2,na.rm = T)/mean(DF_separado$Tiempo2,na.rm = T)
+median(DF_separado$Tiempo2,na.rm = T)
+sd(DF_separado$Tiempo2, na.rm=T)
+range(DF_separado$Tiempo2,na.rm=T)
+```
+
+```{r}
+hist(DF_separado$Tiempo2)
+```
+
+#### Preguntas Por Hacer
+
+```{r}
+
+#Pregunta 2: La función str_split_fixed se puede usar para hacer que la tabla sea prolija. (No, creo yo)
+
+#Pregunta 4: Se debe considerar la imputación, el que muestre una menor cantidad?
+
+#Pregunta 7: Todas son verdaderas, cuál es la falsa
+
+#Pregunta 9: La gráfica muestra claramente que no hay hembras de cuy skinny en la muestra. (No lo hay, pero lo considero)
+
+
+```

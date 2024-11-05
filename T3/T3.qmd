@@ -1,0 +1,46 @@
+---
+title: "Tarea 03"
+format: html
+editor: visual
+---
+
+```{r}
+library(ggplot2)
+library(readr)
+library(dplyr)
+library(vcd)
+library(knitr)
+library(kableExtra)
+library(vcd)
+library(stringr)
+DF  <- read.csv("C:/Users/nllerenas/OneDrive/Documentos/Nicolas/UTEC/2024-2/estadistica-y-probabilidades/T3/Cuy_InicialYPiloto.csv", sep =",")
+```
+
+```{r}
+# Análisis de la tabla
+observations_count <- nrow(DF)
+variables_count <- ncol(DF)
+
+# Identificación de variables por tipo
+categorical_nominal_vars <- DF %>% select(Raza, Sexo, Color, Reporte, Equipo) %>% ncol()
+categorical_ordinal_vars <- DF %>% select(Talla) %>% ncol()
+numerical_vars <- DF %>% select(Peso, Largo, Cintura, Edad, Tiempo)
+numerical_continuous_vars <- numerical_vars %>% select_if(is.numeric) %>% ncol()
+numerical_discrete_vars <- numerical_vars %>% select_if(is.integer) %>% ncol()
+
+# Determinación de la naturaleza de "Tiempo"
+tiempo_description <- ifelse(is.numeric(DF$Tiempo), "continua", "discreta")
+
+# Observaciones incompletas
+incomplete_observations_count <- sum(!complete.cases(DF))
+
+# Resultados en formato de texto
+cat("La tabla tiene", observations_count, "observaciones de", variables_count, "variables.\n")
+cat("Hay", categorical_nominal_vars, "variables categóricas nominales,", 
+    categorical_ordinal_vars, "variable categórica ordinal y 1 variable tipo fecha.\n")
+cat("También hay", numerical_continuous_vars, "variables numéricas continuas, de las cuales",
+    numerical_discrete_vars, "son variables numéricas discretas.\n")
+cat("La variable Tiempo es", tiempo_description, ".\n")
+cat("De acuerdo al enunciado, la base de datos está completa (aunque hay observaciones con valores faltantes).\n")
+cat("La variable Reporte claramente no está prolija.\n")
+cat("La base de datos tiene", incomplete_observations_count, "observaciones incompletas.")

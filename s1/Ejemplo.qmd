@@ -43,7 +43,9 @@ Ahora para calcular el promedio de esas edades utilizaremos el comando `mean`
 ```{r}
 mean(edad)
 ```
+
 Creamos una nueva variable
+
 ```{r}
 edad_mult <-2*edad
 edad_mult
@@ -56,7 +58,7 @@ mean(edad_mult)
 ```
 
 Ahora podemos pedir un cuadro resumen básico de esta nueva variable, para esto usaremos `summary`
+
 ```{r}
 summary(edad_mult)
 ```
-

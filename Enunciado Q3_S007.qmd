@@ -1,0 +1,16 @@
+---
+title: "Enunciado Q3_S007"
+format: html
+---
+
+## Enunciado del Q3
+
+Se tiene la siguiente base de datos que corresponde al Índice de la felicidad es una publicación anual de las Naciones Unidas que mide la felicidad en 138 países, basándose en encuestas a ciudadanos donde estos evalúan su propia vida y sus respuestas se relacionan con distintos factores de calidad de vida.
+Se considera los siguientes Niveles de felicidad
+
+- [0 ; 4[ BAJO
+- [4 ; 6[ MEDIO
+- [6 ; 8] ALTO
+
+En función a esta base de datos responda las preguntas solicitadas. 
+

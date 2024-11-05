@@ -1,0 +1,61 @@
+---
+title: "EP-parte1"
+format: html
+editor: visual
+---
+
+```{r}
+setwd("E:/Documents/R/EP-parte1")
+getwd()
+```
+
+```{r}
+install.packages("readr")
+library("readr")
+```
+
+```{r}
+bd = read_csv("L1A.csv")
+bd
+```
+
+```{r}
+#cantidad de datos faltantes y porcentaje
+sum(is.na(bd))
+100 * 1617 / (3000 * 12) 
+
+#filas con datos faltantes y porcentaje
+nrow(na.omit(bd))
+3000 - 2158
+round(842 / 3000 * 100, 2)
+```
+
+```{r}
+#Variable con mas datos faltantes
+sum(is.na(bd$Id))
+sum(is.na(bd$Tipo))
+sum(is.na(bd$Fecha))
+sum(is.na(bd$Sexo))
+sum(is.na(bd$Actividad))
+sum(is.na(bd$Edad))
+sum(is.na(bd$Peso))
+sum(is.na(bd$Estatura))
+sum(is.na(bd$Presion))
+sum(is.na(bd$Pulso))
+sum(is.na(bd$Temperatura))
+sum(is.na(bd$IMC)) 
+```
+
+```{r}
+#Promedio de datos faltantes por variable
+UM <- apply(bd, 1, function(x) sum(is.na(x)))
+round(mean(UM),2)
+
+#Variables con minimo 2 datos faltantes
+nas = rowSums(is.na(bd))
+minimo_2 = sum(nas >= 2)
+minimo_2
+
+#Tamaño efectivo
+nrow(bd)-nrow(na.omit(bd))
+```

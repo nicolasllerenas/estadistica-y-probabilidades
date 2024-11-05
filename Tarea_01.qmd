@@ -1,0 +1,847 @@
+---
+title: "Tarea 1"
+format: html
+editor: visual
+---
+
+## Tarea 01
+
+### Cargar Librerías
+
+```{r}
+install.packages("dplyr")  # Si no está instalado
+install.packages("ggplot2")
+install.packages("e1071")
+
+library(e1071)
+library(dplyr)
+library(ggplot2)
+```
+
+### Cargar DF
+
+```{r}
+DF <- read.csv("C:/Users/nllerenas/OneDrive/Documentos/Nicolas/UTEC/2024-2/estadistica-y-probabilidades/cuytopia.csv")
+
+print(DF)
+```
+
+#### Pregunta 01
+
+```{r}
+dim(DF)
+```
+
+#### Pregunta 02
+
+```{r}
+print("Datos Faltantes")
+sum(is.na(DF))
+
+num_filas_incompletas <- sum(rowSums(is.na(DF)) > 0)
+print(paste("Número de filas incompletas:", num_filas_incompletas))
+
+print("% Datos Faltantes")
+round((sum(is.na(DF))/(4649*8))*100,2)
+
+print("% Filas Faltantes")
+round(( sum(rowSums(is.na(DF)) > 0)/4649)*100,2)
+```
+
+#### Pregunta 03
+
+```{r}
+print("% Tamaño de la Muestra:")
+nrow(DF)
+
+print("% Tamaño Efectivo de la Muestra:")
+nrow(na.omit(DF))
+
+print("% Tamaño Efectivo de cada Variable:")
+apply(DF, 2, function(x) sum(is.na(x)))
+
+
+# Calcular el número de valores no faltantes por variable
+tamaño_efectivo <- colSums(!is.na(DF))
+
+# Identificar la variable con el menor tamaño efectivo
+variable_menor_efectivo <- names(tamaño_efectivo)[which.min(tamaño_efectivo)]
+tamaño_menor_efectivo <- min(tamaño_efectivo)
+
+# Mostrar los resultados
+cat("La variable con el menor tamaño efectivo de muestra es", variable_menor_efectivo, 
+    "y su tamaño efectivo es", tamaño_menor_efectivo, "\n")
+```
+
+#### Pregunta 04
+
+```{r}
+print("% Tamaño Efectivo de cada Unidad Muestral:")
+UM <- apply(DF, 1, function(x) sum(is.na(x)))
+
+print("% Máximo de datos faltantes en una unidad muestral:")
+max(UM)
+
+print("% Número de Unidades Muestrales que les falte 5:") #Hace alución a esto
+sum(UM==5)
+
+print("% Promedio de Datos Faltantes por Unidad Muestral:")
+round(mean(UM),2)
+
+print("% Mediana de Datos Faltantes por Unidad Muestral:")
+median(UM)
+```
+
+#### Pregunta 05
+
+```{r}
+sapply(DF, class)
+#La variable Peso no parece que fuera discreta 
+```
+
+#### Pregunta 06
+
+#### Pregunta 07 - Talla
+
+```{r}
+tabla_talla <- DF %>%
+  group_by(Talla) %>%
+  summarise(Frecuencia = n()) %>%
+  arrange(desc(Frecuencia))  # Ordenar por frecuencia
+
+print(tabla_talla)
+```
+
+```{r}
+print("Cantidad de Valores Diferentes en la Variable Talla:")
+nrow(tabla_talla) #No se cuenta NA
+
+#La moda es NA o Sano?
+```
+
+```{r}
+frecuencias <- table(DF$Talla)
+
+# Ordena las categorías por frecuencia
+frecuencias_ordenadas <- sort(frecuencias, decreasing = TRUE)
+
+# Encuentra el número total de observaciones
+n <- sum(frecuencias)
+
+# Encuentra la categoría que ocupa la posición central
+cumsum_frecuencias <- cumsum(frecuencias_ordenadas)
+categoria_mediana <- names(cumsum_frecuencias)[which(cumsum_frecuencias >= n / 2)][1]
+
+print(paste("La mediana de Talla es:", categoria_mediana))
+```
+
+#### Pregunta 08 - Sexo
+
+```{r}
+tabla_sexo <- DF %>%
+  group_by(Sexo) %>%
+  summarise(Frecuencia = n()) %>%
+  arrange(desc(Frecuencia))  # Ordenar por frecuencia
+
+print(tabla_sexo)
+```
+
+##### Limpieza de Datos "Sexo"
+
+```{r}
+tabla_sexo_limp <- DF %>%
+  mutate(Sexo = case_when(
+    Sexo %in% c("Macho", "M", "m", "h", "H", "Machoo", "machoo", "MMacho", "mmachoo", "Mmachoo") ~ "macho",
+    Sexo %in% c("Hembra", "F", "f") ~ "hembra",
+    TRUE ~ Sexo  # Mantener otros valores sin cambios
+  ))
+
+tabla_sexo <- tabla_sexo_limp %>%
+  group_by(Sexo) %>%
+  summarise(Frecuencia = n()) %>%
+  arrange(desc(Frecuencia))  # Ordenar por frecuencia
+
+print(tabla_sexo)
+```
+
+#### Pregunta 09 - Raza
+
+```{r}
+tabla_raza <- DF %>%
+  group_by(Raza) %>%
+  summarise(Frecuencia = n()) %>%
+  arrange(desc(Frecuencia))  # Ordenar por frecuencia
+
+print(tabla_raza)
+```
+
+##### Limpieza de Datos "Raza"
+
+```{r}
+tabla_raza_limp <- DF %>%
+  mutate(Raza = case_when(
+    Raza %in% c("Cuy abisinio", "Cuy Abisinio", "Abisinio", "Cuy Abismo") ~ "abisinio",
+    Raza %in% c("Cuy Andino", "Andino", "Cuy andino", "aNDino", "adinon") ~ "andino",
+    Raza %in% c("Cuy", "hibrido", "Hibrido", "Cuy Híbrido", "Cuy híbrido", "Híbrido", "ibrido", "cuy") ~ "híbrido",
+    is.na(Raza) ~ "híbrido",
+    Raza %in% c("peruano","Peruano","peruanoo", "Cuy Peruano", "Cuy peruano","Peruanoo") ~ "peruano",
+    Raza %in% c("Cuy Americano", "Americano", "Cuy americano", "Americanoo") ~ "americano",
+    Raza %in% c("Cuy rex") ~ "rex ",
+    Raza %in% c("Cuy skinny") ~ "skinny",
+    TRUE ~ Raza  # Mantener otros valores sin cambios
+  ))
+
+tabla_raza <- tabla_raza_limp %>%
+  group_by(Raza) %>%
+  summarise(Frecuencia = n()) %>%
+  arrange(desc(Frecuencia))  # Ordenar por frecuencia
+
+print(tabla_raza)
+
+#Al limpiar los NA se quitan? Y se cuenta todo el tamaño efectivo
+```
+
+#### Pregunta 10 - Color
+
+```{r}
+tabla_color <- DF %>%
+  group_by(Color) %>%
+  summarise(Frecuencia = n()) %>%
+  arrange(desc(Frecuencia))  # Ordenar por frecuencia
+
+print(tabla_color)
+```
+
+```{r}
+tabla_color_limp <- DF %>%
+  mutate(Color = case_when(
+    Color %in% c("Negro", "Negroo", "negroo") ~ "negro",
+    Color %in% c("Tricolor", "Tricooloor") ~ "tricolor",
+    Color %in% c("Blanco", "Blancoo", "blancoo") ~ "blanco",
+    Color %in% c("Pintado", "Pintadoo", "pintadoo") ~ "pintado",
+    Color %in% c("Rojizo", "Roojizoo") ~ "rojizo",
+    Color %in% c("Marrón", "Mmarrón", "MMarrón", "mMarrón") ~ "marrón",
+    Color %in% c("Marrón Oscuro") ~ "marrón oscuro",
+    Color %in% c("Gris") ~ "gris",
+    Color %in% c("Rosa") ~ "rosa",
+    TRUE ~ Color  # Mantener otros valores sin cambios
+  ))
+
+tabla_color <- tabla_color_limp %>%
+  group_by(Color) %>%
+  summarise(Frecuencia = n()) %>%
+  arrange(desc(Frecuencia))  # Ordenar por frecuencia
+
+print(tabla_color)
+```
+
+#### Pregunta 11 - Peso
+
+```{r}
+boxplot(DF$Peso)
+```
+
+##### Números mayores a 3000
+
+```{r}
+
+# Contar cuántos valores en la columna 'Peso' son mayores a 3000
+num_mayores_3000 <- sum(DF$Peso > 3000, na.rm = TRUE)
+
+# Imprimir el resultado
+print(num_mayores_3000)
+
+```
+
+```{r}
+# Crear una copia de la columna 'Peso' en una nueva variable
+Peso_Limpio <- DF$Peso
+
+# Reemplazar los valores mayores a 3000 con NA
+Peso_Limpio[Peso_Limpio > 3000] <- NA
+
+boxplot(Peso_Limpio)
+```
+
+##### Medidas de Tendencia de Peso
+
+```{r}
+# Crear un nuevo vector sin valores NA
+Peso_Limpio_Limpio <- na.omit(Peso_Limpio)
+
+print("Mínimo:")
+round(min(Peso_Limpio_Limpio),2)
+
+print("Mediana:")
+round(median(Peso_Limpio_Limpio),2)
+
+print("Máximo:")
+round(max(Peso_Limpio_Limpio),2)
+
+print("Promedio:")
+round(mean(Peso_Limpio_Limpio),2)
+
+print("Desviación Estándar:")
+round(sd(Peso_Limpio_Limpio),2)
+
+summary(Peso_Limpio)
+
+print("Tamaño Efectivo:")
+nrow(DF) - sum(is.na(Peso_Limpio))
+```
+
+```{r}
+# Media y Mediana
+media <- mean(DF$Peso, na.rm = TRUE)
+mediana <- median(DF$Peso, na.rm = TRUE)
+
+print(paste("Media:", media))
+print(paste("Mediana:", mediana))
+
+# Comparación básica
+if (media > mediana) {
+  print("La distribución puede estar sesgada a la derecha.")
+} else if (media < mediana) {
+  print("La distribución puede estar sesgada a la izquierda.")
+} else {
+  print("La distribución parece ser simétrica.")
+}
+
+
+# Desviación Absoluta Media (MAD) alrededor de la media
+mad_media <- mean(abs(DF$Peso - media), na.rm = TRUE)
+print(paste("MAD alrededor de la media:", mad_media))
+
+# Desviación Absoluta Media (MAD) alrededor de la mediana
+mad_mediana <- mean(abs(DF$Peso - mediana), na.rm = TRUE)
+print(paste("MAD alrededor de la mediana:", mad_mediana))
+
+# Comparación básica
+if (mad_media > mad_mediana) {
+  print("La dispersión alrededor de la media es mayor, lo que puede sugerir sesgo.")
+} else {
+  print("La dispersión alrededor de la mediana es mayor, lo que puede sugerir simetría.")
+}
+```
+
+#### Pregunta 12 - Edad
+
+```{r}
+boxplot(DF$Edad)
+#Se considera los valores NA como erróneos
+```
+
+```{r}
+summary(DF$Edad)
+```
+
+```{r}
+es_entero <- !is.na(DF$Edad) & (DF$Edad == floor(DF$Edad))
+
+# Contar los valores enteros y decimales, excluyendo NA
+num_enteros <- sum(es_entero, na.rm = TRUE)
+num_decimales <- sum(!es_entero, na.rm = TRUE)
+
+# Imprimir resultados
+print(paste("Número de valores enteros:", num_enteros))
+print(paste("Número de valores decimales:", num_decimales))
+```
+
+```{r}
+# Crear una copia de la columna Edad
+DF_Limpio <- DF$Edad
+
+# Identificar los valores decimales en la copia
+es_decimal <- !is.na(DF_Limpio) & (DF_Limpio != floor(DF_Limpio))
+
+# Convertir los valores decimales a NA en la copia
+DF_Limpio[es_decimal] <- NA
+```
+
+```{r}
+# Crear un nuevo vector sin valores NA
+Peso_Limpio_Limpio <- na.omit(DF_Limpio)
+
+print("Mínimo:")
+round(min(Peso_Limpio_Limpio),2)
+
+print("Mediana:")
+round(median(Peso_Limpio_Limpio),2)
+
+print("Máximo:")
+round(max(Peso_Limpio_Limpio),2)
+
+print("Promedio:")
+round(mean(Peso_Limpio_Limpio),2)
+
+print("Desviación Estándar:")
+round(sd(Peso_Limpio_Limpio),2)
+
+summary(DF_Limpio)
+
+print("Tamaño Efectivo:")
+nrow(DF) - sum(is.na(DF_Limpio))
+```
+
+```{r}
+# Media y Mediana
+media <- mean(DF$Edad, na.rm = TRUE)
+mediana <- median(DF$Edad, na.rm = TRUE)
+
+print(paste("Media:", media))
+print(paste("Mediana:", mediana))
+
+# Comparación básica
+if (media > mediana) {
+  print("La distribución puede estar sesgada a la derecha.")
+} else if (media < mediana) {
+  print("La distribución puede estar sesgada a la izquierda.")
+} else {
+  print("La distribución parece ser simétrica.")
+}
+
+
+# Desviación Absoluta Media (MAD) alrededor de la media
+mad_media <- mean(abs(DF$Edad - media), na.rm = TRUE)
+print(paste("MAD alrededor de la media:", mad_media))
+
+# Desviación Absoluta Media (MAD) alrededor de la mediana
+mad_mediana <- mean(abs(DF$Edad - mediana), na.rm = TRUE)
+print(paste("MAD alrededor de la mediana:", mad_mediana))
+
+# Comparación básica
+if (mad_media > mad_mediana) {
+  print("La dispersión alrededor de la media es mayor, lo que puede sugerir sesgo.")
+} else {
+  print("La dispersión alrededor de la mediana es mayor, lo que puede sugerir simetría.")
+}
+```
+
+#### Pregunta 13 - Cintura
+
+```{r}
+boxplot(DF$Cintura)
+```
+
+```{r}
+summary(DF$Cintura)
+```
+
+```{r}
+es_entero <- !is.na(DF$Cintura) & (DF$Cintura == floor(DF$Cintura))
+
+# Contar los valores enteros y decimales, excluyendo NA
+num_enteros <- sum(es_entero, na.rm = TRUE)
+num_decimales <- sum(!es_entero, na.rm = TRUE)
+
+# Imprimir resultados
+print(paste("Número de valores enteros:", num_enteros))
+print(paste("Número de valores decimales:", num_decimales))
+```
+
+```{r}
+# Crear una copia de la columna Cintura
+DF_Limpio <- DF$Cintura
+
+# Identificar los valores decimales en la copia
+es_decimal <- !is.na(DF_Limpio) & (DF_Limpio != floor(DF_Limpio))
+
+# Convertir los valores decimales a NA en la copia
+DF_Limpio[es_decimal] <- NA
+
+# Crear un nuevo vector sin valores NA
+Peso_Limpio_Limpio <- na.omit(DF_Limpio)
+
+print("Mínimo:")
+round(min(Peso_Limpio_Limpio),2)
+
+print("Mediana:")
+round(median(Peso_Limpio_Limpio),2)
+
+print("Máximo:")
+round(max(Peso_Limpio_Limpio),2)
+
+print("Promedio:")
+round(mean(Peso_Limpio_Limpio),2)
+
+print("Desviación Estándar:")
+round(sd(Peso_Limpio_Limpio),2)
+
+summary(DF_Limpio)
+
+print("Tamaño Efectivo:")
+nrow(DF) - sum(is.na(DF_Limpio))
+
+
+print("Mediana:")
+round(median(Peso_Limpio_Limpio),2)
+
+print("Promedio:")
+round(mean(Peso_Limpio_Limpio),2)
+
+print("Media es mayor, por ende, es sesgada a la derecha, puede ser ligeramente simétrica")
+```
+
+```{r}
+# Media y Mediana
+media <- mean(DF$Cintura, na.rm = TRUE)
+mediana <- median(DF$Cintura, na.rm = TRUE)
+
+print(paste("Media:", media))
+print(paste("Mediana:", mediana))
+
+# Comparación básica
+if (media > mediana) {
+  print("La distribución puede estar sesgada a la derecha.")
+} else if (media < mediana) {
+  print("La distribución puede estar sesgada a la izquierda.")
+} else {
+  print("La distribución parece ser simétrica.")
+}
+
+
+# Desviación Absoluta Media (MAD) alrededor de la media
+mad_media <- mean(abs(DF$Cintura - media), na.rm = TRUE)
+print(paste("MAD alrededor de la media:", mad_media))
+
+# Desviación Absoluta Media (MAD) alrededor de la mediana
+mad_mediana <- mean(abs(DF$Cintura - mediana), na.rm = TRUE)
+print(paste("MAD alrededor de la mediana:", mad_mediana))
+
+# Comparación básica
+if (mad_media > mad_mediana) {
+  print("La dispersión alrededor de la media es mayor, lo que puede sugerir sesgo.")
+} else {
+  print("La dispersión alrededor de la mediana es mayor, lo que puede sugerir simetría.")
+}
+```
+
+#### Pregunta 14 - Largo
+
+```{r}
+boxplot(DF$Largo)
+```
+
+```{r}
+summary(DF$Largo)
+```
+
+```{r}
+# Crear una copia de la columna 'Peso' en una nueva variable
+Peso_Limpio <- DF$Largo
+
+# Reemplazar los valores mayores a 3000 con NA
+Peso_Limpio[Peso_Limpio > 50] <- NA
+
+boxplot(Peso_Limpio)
+```
+
+```{r}
+summary(Peso_Limpio)
+```
+
+```{r}
+es_entero <- !is.na(DF$Largo) & (DF$Largo == floor(DF$Largo))
+
+# Contar los valores enteros y decimales, excluyendo NA
+num_enteros <- sum(es_entero, na.rm = TRUE)
+num_decimales <- sum(!es_entero, na.rm = TRUE)
+
+# Imprimir resultados
+print(paste("Número de valores enteros:", num_enteros))
+print(paste("Número de valores decimales:", num_decimales))
+```
+
+```{r}
+# Crear una copia de la columna Cintura
+DF_Limpio <- Peso_Limpio
+
+# Identificar los valores decimales en la copia
+es_decimal <- !is.na(DF_Limpio) & (DF_Limpio != floor(DF_Limpio))
+
+# Convertir los valores decimales a NA en la copia
+DF_Limpio[es_decimal] <- NA
+
+# Crear un nuevo vector sin valores NA
+Peso_Limpio_Limpio <- na.omit(DF_Limpio)
+
+print("Mínimo:")
+round(min(Peso_Limpio_Limpio),2)
+
+print("Mediana:")
+round(median(Peso_Limpio_Limpio),2)
+
+print("Máximo:")
+round(max(Peso_Limpio_Limpio),2)
+
+print("Promedio:")
+round(mean(Peso_Limpio_Limpio),2)
+
+print("Desviación Estándar:")
+round(sd(Peso_Limpio_Limpio),2)
+
+summary(DF_Limpio)
+
+print("Tamaño Efectivo:")
+nrow(DF) - sum(is.na(DF_Limpio))
+
+
+print("Mediana:")
+round(median(Peso_Limpio_Limpio),2)
+
+print("Promedio:")
+round(mean(Peso_Limpio_Limpio),2)
+
+print("Media es mayor, por ende, es sesgada a la derecha, puede ser ligeramente simétrica")
+```
+
+#### Pregunta 15 - Limpieza de Talla
+
+```{r}
+tabla_talla_limp <- DF %>%
+  mutate(Talla = case_when(
+    Talla %in% c("Flaco") ~ "flaco",
+    Talla %in% c("Sano", "Sanoo", "sanoo") ~ "sano",
+    Talla %in% c("Gordo", "goordo", "gordoo","goordoo") ~ "gordo",
+    Talla %in% c("Obeso","Obesoo") ~ "obeso",
+    TRUE ~ Talla  # Mantener otros valores sin cambios
+  ))
+
+tabla_talla <- tabla_talla_limp %>%
+  group_by(Talla) %>%
+  summarise(Frecuencia = n()) %>%
+  arrange(desc(Frecuencia))  # Ordenar por frecuencia
+
+print(tabla_talla)
+```
+
+```{r}
+Talla_ord <- tabla_talla[!is.na(tabla_talla$Talla), ]
+print(Talla_ord)
+
+```
+
+```{r}
+# Calcular frecuencia acumulada
+Talla_ord <- Talla_ord %>%
+  arrange(desc(Frecuencia)) %>%
+  mutate(Frecuencia_Acumulada = cumsum(Frecuencia))
+
+# Número total de observaciones
+total_observaciones <- sum(Talla_ord$Frecuencia)
+
+# Calcular las posiciones de los cuartiles
+pos_cuartiles <- quantile(1:total_observaciones, probs = c(0.25, 0.5, 0.75))
+
+# Encontrar las categorías correspondientes a los cuartiles
+cuartiles <- sapply(pos_cuartiles, function(p) {
+  Talla_ord$Talla[which(Talla_ord$Frecuencia_Acumulada >= p)[1]]
+})
+
+# Mostrar las categorías de los cuartiles
+print(cuartiles)
+
+
+print("% Tamaño Efectivo:")
+nrow(DF) - (1832)
+```
+
+#### Pregunta 16
+
+```{r}
+# Calcular el rango
+rango <- range(Peso_Limpio_Limpio)
+rango_valor <- diff(rango)
+print(paste("Rango:", rango_valor))
+
+# Calcular el rango intercuartil
+rango_intercuartil <- IQR(Peso_Limpio_Limpio, na.rm = TRUE)
+print(paste("Rango Intercuartil:", rango_intercuartil))
+
+# Calcular la media
+media <- mean(Peso_Limpio_Limpio, na.rm = TRUE)
+
+# Calcular la desviación estándar
+desviacion_estandar <- sd(Peso_Limpio_Limpio, na.rm = TRUE)
+
+# Calcular el coeficiente de variación
+coeficiente_variacion <- (desviacion_estandar / media) * 100
+print(paste("Coeficiente de Variación:", coeficiente_variacion, "%"))
+```
+
+```{r}
+# Calcular los cuartiles
+Q1 <- quantile(Peso_Limpio_Limpio, 0.25, na.rm = TRUE)
+Q3 <- quantile(Peso_Limpio_Limpio, 0.75, na.rm = TRUE)
+
+# Calcular el rango intercuartil
+RIQ <- Q3 - Q1
+
+# Calcular la mediana
+Mediana <- median(Peso_Limpio_Limpio, na.rm = TRUE)
+
+# Mostrar los resultados
+print(paste("Q1:", Q1))
+print(paste("Q3:", Q3))
+print(paste("RIQ:", RIQ))
+print(paste("Mediana:", Mediana))
+```
+
+#### Pregunta 17
+
+```{r}
+# Calcular el rango
+rango <- range(Peso_Limpio_Limpio)
+rango_valor <- diff(rango)
+print(paste("Rango:", rango_valor))
+
+# Calcular el rango intercuartil
+rango_intercuartil <- IQR(Peso_Limpio_Limpio, na.rm = TRUE)
+print(paste("Rango Intercuartil:", rango_intercuartil))
+
+# Calcular la media
+media <- mean(Peso_Limpio_Limpio, na.rm = TRUE)
+
+# Calcular la desviación estándar
+desviacion_estandar <- sd(Peso_Limpio_Limpio, na.rm = TRUE)
+
+# Calcular el coeficiente de variación
+coeficiente_variacion <- (desviacion_estandar / media) * 100
+print(paste("Coeficiente de Variación:", coeficiente_variacion, "%"))
+
+# Calcular los cuartiles
+Q1 <- quantile(Peso_Limpio_Limpio, 0.25, na.rm = TRUE)
+Q3 <- quantile(Peso_Limpio_Limpio, 0.75, na.rm = TRUE)
+
+# Calcular el rango intercuartil
+RIQ <- Q3 - Q1
+
+# Calcular la mediana
+Mediana <- median(Peso_Limpio_Limpio, na.rm = TRUE)
+
+# Mostrar los resultados
+print(paste("Q1:", Q1))
+print(paste("Q3:", Q3))
+print(paste("RIQ:", RIQ))
+print(paste("Mediana:", Mediana))
+```
+
+#### Pregunta 18
+
+```{r}
+# Calcular el rango
+rango <- range(Peso_Limpio_Limpio)
+rango_valor <- diff(rango)
+print(paste("Rango:", rango_valor))
+
+# Calcular el rango intercuartil
+rango_intercuartil <- IQR(Peso_Limpio_Limpio, na.rm = TRUE)
+print(paste("Rango Intercuartil:", rango_intercuartil))
+
+# Calcular la media
+media <- mean(Peso_Limpio_Limpio, na.rm = TRUE)
+
+# Calcular la desviación estándar
+desviacion_estandar <- sd(Peso_Limpio_Limpio, na.rm = TRUE)
+
+# Calcular el coeficiente de variación
+coeficiente_variacion <- (desviacion_estandar / media) * 100
+print(paste("Coeficiente de Variación:", coeficiente_variacion, "%"))
+
+# Calcular los cuartiles
+Q1 <- quantile(Peso_Limpio_Limpio, 0.25, na.rm = TRUE)
+Q3 <- quantile(Peso_Limpio_Limpio, 0.75, na.rm = TRUE)
+
+# Calcular el rango intercuartil
+RIQ <- Q3 - Q1
+
+# Calcular la mediana
+Mediana <- median(Peso_Limpio_Limpio, na.rm = TRUE)
+
+# Mostrar los resultados
+print(paste("Q1:", Q1))
+print(paste("Q3:", Q3))
+print(paste("RIQ:", RIQ))
+print(paste("Mediana:", Mediana))
+```
+
+#### Pregunta 19
+
+```{r}
+# Calcular el rango
+rango <- range(Peso_Limpio_Limpio)
+rango_valor <- diff(rango)
+print(paste("Rango:", rango_valor))
+
+# Calcular el rango intercuartil
+rango_intercuartil <- IQR(Peso_Limpio_Limpio, na.rm = TRUE)
+print(paste("Rango Intercuartil:", rango_intercuartil))
+
+# Calcular la media
+media <- mean(Peso_Limpio_Limpio, na.rm = TRUE)
+
+# Calcular la desviación estándar
+desviacion_estandar <- sd(Peso_Limpio_Limpio, na.rm = TRUE)
+
+# Calcular el coeficiente de variación
+coeficiente_variacion <- (desviacion_estandar / media) * 100
+print(paste("Coeficiente de Variación:", coeficiente_variacion, "%"))
+```
+
+-   **En función de lo observado podemos decir que la variable está:** **"moderadamente dispersa"**. El rango es grande, pero el IQR es relativamente pequeño en comparación con el rango total, indicando que aunque hay valores extremos, la mayoría de los datos están más concentrados alrededor de la mediana.
+
+-   **Y su coeficiente de variación es:** **20.71%**. Esto indica que la variabilidad en tus datos es del 20.71% respecto a la media, lo que sugiere una variabilidad moderada.
+
+#### Pregunta 20
+
+```{r}
+calcular_variabilidad <- function(variable) {
+  list(
+    desviacion_estandar = sd(variable, na.rm = TRUE),
+    varianza = var(variable, na.rm = TRUE),
+    rango = max(variable, na.rm = TRUE) - min(variable, na.rm = TRUE),
+    Q1 = quantile(variable, 0.25, na.rm = TRUE),
+    Q3 = quantile(variable, 0.75, na.rm = TRUE),
+    RIQ = quantile(variable, 0.75, na.rm = TRUE) - quantile(variable, 0.25, na.rm = TRUE)
+  )
+}
+
+# Aplicar la función a cada columna
+variabilidad_Edad <- calcular_variabilidad(DF$Edad)
+variabilidad_Peso <- calcular_variabilidad(DF$Peso)
+variabilidad_Cintura <- calcular_variabilidad(DF$Cintura)
+variabilidad_Largo <- calcular_variabilidad(DF$Largo)
+
+
+# Mostrar resultados
+print("Variabilidad de Edad:")
+print(variabilidad_Edad)
+
+print("Variabilidad de Peso:")
+print(variabilidad_Peso)
+
+print("Variabilidad de Cintura:")
+print(variabilidad_Cintura)
+
+print("Variabilidad de Largo:")
+print(variabilidad_Largo)
+```
+
+```{r}
+var(DF$Edad, na.rm = T)
+var(DF$Largo, na.rm = T)
+var(DF$Cintura, na.rm = T)
+var(DF$Peso, na.rm = T)
+```
+
+#### Dudas
+
+```{r}
+#Pregunta 5: La variable Peso, no es discreta, que opción se toma??
+#Pregunta 6: ¿Está bien considerar todo? 
+#Pregunta 7: ¿La mediana se puede medir en una categórica? y ¿NA se considera valor diferente? sí se puede
+#Pregunta 12: ¿Se debe considerar valores vacíos como no enteros?
+#Pregunta 15: Luego, de la limpieza, ¿se espera que todos los NA deban ser eliminados?
+#20%
+
+```

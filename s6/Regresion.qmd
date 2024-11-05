@@ -1,0 +1,84 @@
+---
+title: "Regresion"
+format: html
+editor: visual
+---
+
+En cierto país se estudió la captura de anchoas, en **millones de toneladas métricas**, y los precios de harina de pescado en **dólares por tonelada** para los últimos 13 años
+
+```{r}
+cap_anch <- c(7.23,8.53,9.82,10.26,8.96,12.27,10.28,4.45,1.78,4,3.3,4.3,0.8)
+precio <- c(190,160,134,129,172,197,167,239,542,372,245,376,454)
+```
+
+Procedemos con los cálculos correspondientes
+
+```{r}
+sumX <- sum(cap_anch)
+sumY <- sum(precio)
+sumXY <- sum(cap_anch*precio)
+sumX2 <- sum(cap_anch^2)
+sumX
+sumY
+sumXY
+sumX2
+```
+
+Resolvemos el sistema de ecuaciones
+
+```{r}
+library(MASS)
+A <- matrix(c(13,85.98,85.98,732.2376),nrow = 2,byrow = TRUE)
+b <- c(3377,17357.8)
+solucion <- ginv(A)%*%b
+solucion
+```
+
+```{r}
+CT <- (precio- (sumY/13))^2
+SCT <- sum(CE)
+SCT
+```
+
+```{r}
+CE <- (precio - (461.00618-(30.42661*cap_anch)))^2
+SCE <- sum(CER)
+SCE
+```
+
+```{r}
+SCR <- SCT-SCE
+SCR
+```
+
+Esto representa una mejora del:
+
+```{r}
+SCR/SCT*100
+```
+
+## Regresion Lineal
+
+```{r}
+modelo <- lm(precio ~ cap_anch)
+summary(modelo)
+```
+
+## Correlación
+
+```{r}
+r <- cor(cap_anch,precio) #solo la correlación
+r^2
+
+df <- data.frame(precio,cap_anch) #matriz de correlaciones
+cor(df)
+```
+
+## Estimaciones
+
+Ahora me interesa saber cuál será el precio cuando la captura de anchoas se de 3 toneladas y media
+
+```{r}
+precio_est <- 461.006 - (30.427*3.5)
+precio_est
+```

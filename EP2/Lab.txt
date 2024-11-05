@@ -1,0 +1,165 @@
+---
+title: "EP2_Llerena"
+format: plain
+editor: visual
+---
+
+### Importar Librerías
+
+```{r}
+library(ggplot2)
+library(readr)
+library(kableExtra)
+library(dplyr)
+library(vcd)
+library(knitr)
+library(vcd)
+library(stringr)
+```
+
+```{r}
+DF<-read_csv("C:/Users/nllerenas/OneDrive/Documentos/Nicolas/UTEC/2024-2/estadistica-y-probabilidades/EP2/L1B.csv")
+
+```
+
+```{r}
+DF
+```
+
+### Pregunta 1
+
+```{r}
+colSums(is.na(DF))
+```
+
+```{r}
+aws <- nrow(DF) - colSums(is.na(DF))
+aws
+
+summary(a)
+diff(range(a))
+IQR(a)
+```
+
+```{r}
+g <- filter(DF,!is.na(Pulso), !is.na(Temperatura))
+g
+```
+
+## Pregunta 2
+
+```{r}
+round(mean(DF$Pulso, na.rm = T),2)
+round(sd(DF$Pulso, na.rm = T),2)
+round(sd(DF$Pulso, na.rm = T)/mean(DF$Pulso, na.rm = T),2)
+round(sd(DF$Pulso, na.rm = T)/mean(DF$Pulso, na.rm = T)*100,2)
+
+```
+
+```{r}
+resultados <- str_split_fixed(DF$Presion, pattern = "/",n=2)
+DF_separated <- as.data.frame(resultados, stringsAsFactors = FALSE)
+
+DF_separated$V1 <- as.numeric(DF_separated$V1)
+DF_separated$V2 <- as.numeric(DF_separated$V2)
+
+DF_separated
+```
+
+```{r}
+round(mean(DF_separated$V1, na.rm = T),2)
+round(sd(DF_separated$V1, na.rm = T),2)
+round(sd(DF_separated$V1, na.rm = T)/mean(DF_separated$V1, na.rm = T),2)
+round(sd(DF_separated$V1, na.rm = T)/mean(DF_separated$V1, na.rm = T)*100,2)
+```
+
+```{r}
+round(mean(DF_separated$V2, na.rm = T),2)
+round(sd(DF_separated$V2, na.rm = T),2)
+round(sd(DF_separated$V2, na.rm = T)/mean(DF_separated$V2, na.rm = T),2)
+round(sd(DF_separated$V2, na.rm = T)/mean(DF_separated$V2, na.rm = T)*100,2)
+```
+
+### Pregunta 3
+
+```{r}
+
+nrow(DF)-colSums(is.na(DF_separated))
+```
+
+```{r}
+#cor(DF_separated$V2, DF$Pulso)
+
+DF2 <- data.frame(Diasto = DF_separated$V2, Pulso = DF$Pulso)
+DF2
+
+DF2_limpio <- filter(DF2, !is.na(Pulso), !is.na(Diasto))
+```
+
+```{r}
+DF2_limpio
+```
+
+```{r}
+round(cor(DF2_clean$Diasto,DF2_clean$Pulso),2)
+```
+
+```{r}
+DF3 <- data.frame(Diasto = DF_separated$V2, Pulso = DF$Pulso, Sexo = DF$Sexo)
+DF3
+```
+
+```{r}
+DF3_limpio <- filter(DF3, !is.na(Pulso), !is.na(Diasto), Sexo == 'F')
+DF3_limpio
+
+
+```
+
+```{r}
+round(cor(DF3_clean$Diasto, DF3_clean$Pulso),2)
+```
+
+### Pregunta 4
+
+```{r}
+Cs <- c(rgb(1, 0.5, 0, 1)
+  , rgb(1, 1, 0, 1)
+  , rgb(0.5, 1, 0, 1)
+  , rgb(1, 0.5, 0, 0.3)
+  , rgb(1, 1, 0, 0.3)
+  , rgb(0.5, 1, 0, 0.3)
+  )
+boxplot(DF$Pulso ~ DF$Actividad*DF$Sexo
+  , varwidth = TRUE
+  , col = Cs
+  , notch = TRUE
+  )
+```
+
+### Pregunta 5
+
+```{r}
+mosaic(DF$Actividad ~ DF$Sexo, useNA="ifany")
+```
+
+```{r}
+mosaic(DF$Sexo ~ DF$Actividad, useNA="ifany")
+```
+
+```{r}
+hg<-table(DF$Sexo,DF$Actividad)
+mosaicplot(hg)
+```
+
+```{r}
+mosaic(DF$Actividad ~ DF$Pulso, useNA="ifany")
+```
+
+```{r}
+mosaic(datos$nombre ~ datos$nivel, useNA="ifany")
+```
+
+```{r}
+mosaic(datos$nombre ~ datos$nivel)
+```

@@ -1,0 +1,289 @@
+---
+title: "T2"
+format: html
+---
+
+```{r}
+library(readr)
+library(dplyr)
+library(modeest)
+library(stringr)
+```
+
+```{r}
+DF1 <- read.csv2("C:/Users/nllerenas/OneDrive/Documentos/Nicolas/UTEC/2024-2/estadistica-y-probabilidades/s8/Tarea2/cuytopia_limpio.csv", sep =",", na.strings = "")
+
+DF2 <- read.csv2("C:/Users/nllerenas/OneDrive/Documentos/Nicolas/UTEC/2024-2/estadistica-y-probabilidades/s8/Tarea2/Reporte.csv", sep =",", na.strings = "")
+```
+
+```{r}
+sum(is.na(DF))
+sum(!complete.cases(DF))
+
+sum(is.na(DF)) / (nrow(DF)*ncol(DF)) * 100
+sum(!complete.cases(DF)) / nrow(DF) * 100
+
+colSums(is.na(DF))
+sum(complete.cases(DF$Talla))
+```
+
+```{r}
+Reporte$Serial <- str_extract(Reporte$value, "Ser\\. No\\.: [^\\s]+")
+Reporte$Serial <- str_replace(Reporte$Serial, "Ser\\. No\\.: ", "")
+
+Reporte$Fecha <- str_extract(Reporte$value, "Date: [\\d\\-]+ [\\d\\:]+\\.[\\d]+")
+Reporte$Fecha <- str_replace(Reporte$Fecha, "Date: ", "")
+
+Reporte$Status <- str_extract(Reporte$value, "Status: [A-Z]+")
+Reporte$Status <- str_replace(Reporte$Status, "Status: ", "")
+
+DF <- cbind(DF, Serial = Reporte$Serial, Fecha = Reporte$Fecha, Status = Reporte$Status)
+
+DF <- DF %>%
+  mutate(Day = str_split_fixed(Fecha, " ", 2)[,1],
+         Hour = str_split_fixed(Fecha, " ", 2)[,2])
+```
+
+```{r}
+table(DF$Serial)
+table(DF$Status)
+sum(is.na(DF$Hour))
+sum(is.na(DF))
+```
+
+```{r}
+DF <- DF %>%
+  mutate(Equipo = case_when(
+    str_detect(Serial, "6543BF2-X") ~ 1,
+    str_detect(Serial, "4653OK2-X") ~ 2,
+    str_detect(Serial, "0372EK3-Z") ~ 3,
+    TRUE ~ NA_real_
+  ),
+  Fecha = str_extract(Fecha, "\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}"),
+         Fecha = as.POSIXct(Fecha, format = "%Y-%m-%d %H:%M:%S"),
+  Error = if_else(str_detect(Status, "ERR"), TRUE, FALSE)
+  )
+```
+
+```{r}
+table(DF$Equipo)
+```
+```{r}
+table(DF$Equipo, DF$Day)
+```
+
+
+```{r}
+barplot(table(DF$Error, format(DF$Fecha, "%y-%m-%d")), las = 3, col = c("cyan", "orange"), border = NA)
+table(DF$Day, DF$Error)
+```
+```{r}
+bcol <- c("white", "black", "Peru", "Peru", "Peru"
+          , "firebrick", "saddlebrown", "Dimgray", "pink")
+tcol <- c("gray", "black", "Peru", "Peru", "black"
+          , "firebrick", "saddlebrown", "Dimgray", "pink")
+text(barplot(sort(table(DF$Color), decreasing = TRUE)
+        , cex.names = 0.6
+        , col = bcol,
+        , border = tcol
+        , angle = 45
+        , density = c(0, 1000, 1000, 25.4, 25.4, 1000, 1000, 1000, 1000)
+        , ylim = c(0, 1800)
+        , main = "Distribución de colores en la muestra"
+        , sub = paste("Tamaño muestral:", nrow(DF), "cuyes.")
+        , xlab = "color del pelaje (ver libreta de códigos para más detalles)"
+        , ylab = "cantidad"
+        )
+     , sort(table(DF$Color), decreasing = TRUE)
+     , paste(round(sort(table(DF$Color), decreasing = TRUE)/nrow(DF)*100), "%")
+     , col = tcol
+     , pos = 3
+     , cex = 0.6
+)
+```
+
+```{r}
+Tabla <- table(DF$Sexo, 
+              case_match(DF$Color
+                         , c("tricolor", "rojizo"
+                             , "marrón oscuro", "gris", "rosa"
+                             ) ~ "otro pelaje"
+                         , DF$Color ~ DF$Color
+                         )
+              )[, c(1, 3, 2, 5, 4)] 
+text(barplot(Tabla
+             , col = c("red", "blue")
+             , ylim = c(0, 1800)
+             , cex.names = 0.8
+             , cex.axis = 0.8
+             , ylab = ""
+             )
+     , t(Tabla 
+         + matrix(nrow = 2, ncol = 5, c(rep(0, 5), Tabla[1, ]), byrow = TRUE)
+         ), paste(sprintf("%5.2f",round(t(Tabla/nrow(DF)*100))), "%")
+     , col = "white"
+     , pos = 1
+     , cex = 0.8
+     )
+legend("topright", legend = c("machos", "hembras"), fill = c("blue", "red"), bty = "n")
+title("Distribución de sexos y color de pelaje en la muestra"
+      , sub = sprintf("tamaño muestral: %d\n machos: %d hembras: %d"
+                      , nrow(DF)
+                      , sum(DF$Sexo == "macho")
+                      , nrow(DF) - sum(DF$Sexo == "macho")
+                      )
+      , cex.sub = 0.8
+      )
+title(xlab = "color de pelaje", ylab = "cantidad", line = 2)
+```
+
+```{r}
+library(tableHTML)
+DF %>% 
+  group_by(Raza, Sexo) %>% 
+  summarise(Cantidad = n()) %>%
+  select(Raza, Sexo, Cantidad) %>%
+  tidyr::pivot_wider(names_from = Sexo, values_from = Cantidad) %>%
+  mutate(hembra = ifelse(is.na(hembra), 0, hembra)
+         , macho = ifelse(is.na(macho), 0, macho)) %>%
+  arrange(desc(hembra/(hembra + macho))) %>%
+  tableHTML(rownames = FALSE, widths = c(70, 70, 70), caption = "Tabla 1: raza vs. sexo") %>%
+  add_css_caption(css = list(c('font-weight'), c('bold'))) %>%
+  add_css_table(css = list(c('border'), c('0px solid lightgray'))) %>%
+  add_css_header(css = list(c('text-align'), c('right')), c(2, 3)) %>%
+  add_css_column(css = list(c('text-align'), c('right')), c(2, 3))
+```
+
+```{r}
+Tabla <- table(DF$Raza, DF$Sexo)
+Ind <- order(Tabla[ ,1]/rowSums(Tabla), decreasing = TRUE)
+mosaicplot(round(Tabla[Ind, ]/rowSums(Tabla)[Ind]*100)
+           , col = c("red", "blue")
+           , main = "Figura A: raza vs. sexo"
+           , ylab = "sexo"
+           , xlab = "raza"
+           )
+```
+
+```{r}
+Tabla <- table(DF$Raza, DF$Sexo)
+Ind <- order(Tabla[ ,1]/rowSums(Tabla), decreasing = TRUE)
+mosaicplot(Tabla[Ind, ]
+           , col = c("red", "blue")
+           , cex.axis = 0.4
+           , main = "Figura B: raza vs. sexo"
+           , ylab = "sexo"
+           , xlab = "raza"
+           )
+```
+
+```{r Fragmento_1}
+plot(DF[,c("Edad", "Peso", "Largo", "Cintura")], pch = 20, col = rgb(0, 0, 0, 0.05))
+```
+
+```{r Fragmento_2}
+cor(DF[,c("Edad", "Peso", "Largo", "Cintura")], use = "complete.obs")
+```
+ 
+
+```{r}
+Sel <- (DF$Raza == "americano") | (DF$Raza == "andino") | (DF$Raza == "híbrido") | (DF$Raza == "peruano") 
+Var <- DF$Largo
+boxplot(Var[Sel] ~ DF$Sexo[Sel]*DF$Raza[Sel]
+        , varwidth = TRUE
+        , las = 3
+        , notch = TRUE
+        , col = c("blue", "red")
+        , ylab = "largo (cm)"
+        , xlab = ""
+        , cex.axis = 0.5
+        , main = "Largo en términos del sexo y la raza"
+        , sub = paste("Total de", sum(Sel & !is.na(Var)), "cuyes")
+        )
+legend("topright"
+       , legend = c("hembra", "macho")
+       , fill = c("blue", "red")
+       , cex = 0.8
+       , bty = "n"
+       )
+```
+
+```{r}
+#Peso
+sum(complete.cases(DF$Peso))
+sdPeso <- sd(DF$Peso, na.rm = TRUE)
+meanPeso <- mean(DF$Peso, na.rm = TRUE)
+
+sdPeso / meanPeso * 100
+
+(pnorm(meanPeso + sdPeso, mean = meanPeso, sd = sdPeso) - pnorm(meanPeso - sdPeso, mean = meanPeso, sd = sdPeso)) * 100
+(pnorm(meanPeso + (2*sdPeso), mean = meanPeso, sd = sdPeso) - pnorm(meanPeso - (2*sdPeso), mean = meanPeso, sd = sdPeso)) * 100
+(pnorm(meanPeso + (3*sdPeso), mean = meanPeso, sd = sdPeso) - pnorm(meanPeso - (3*sdPeso), mean = meanPeso, sd = sdPeso)) * 100
+
+hist(DF$Peso, breaks = 15, main = "Histograma del Peso", xlab = "Peso", ylab = "Frecuencia")
+```
+```{r}
+#Largo
+sum(complete.cases(DF$Largo))
+sdLargo <- sd(DF$Largo, na.rm = TRUE)
+meanLargo <- mean(DF$Largo, na.rm = TRUE)
+
+sdLargo / meanLargo * 100
+
+(pnorm(meanLargo + sdLargo, mean = meanLargo, sd = sdLargo) - pnorm(meanLargo - sdLargo, mean = meanLargo, sd = sdLargo)) * 100
+(pnorm(meanLargo + (2*sdLargo), mean = meanLargo, sd = sdLargo) - pnorm(meanLargo - (2*sdLargo), mean = meanLargo, sd = sdLargo)) * 100
+(pnorm(meanLargo + (3*sdLargo), mean = meanLargo, sd = sdLargo) - pnorm(meanLargo - (3*sdLargo), mean = meanLargo, sd = sdLargo)) * 100
+
+hist(DF$Largo, breaks = 15, main = "Histograma del Largo", xlab = "Largo", ylab = "Frecuencia")
+```
+```{r}
+#Cintura
+sum(complete.cases(DF$Cintura))
+sdCintura <- sd(DF$Cintura, na.rm = TRUE)
+meanCintura <- mean(DF$Cintura, na.rm = TRUE)
+sdCintura / meanCintura * 100
+
+(pnorm(meanCintura + sdCintura, mean = meanCintura, sd = sdCintura) - 
+ pnorm(meanCintura - sdCintura, mean = meanCintura, sd = sdCintura)) * 100
+
+(pnorm(meanCintura + (2 * sdCintura), mean = meanCintura, sd = sdCintura) - 
+ pnorm(meanCintura - (2 * sdCintura), mean = meanCintura, sd = sdCintura)) * 100
+
+(pnorm(meanCintura + (3 * sdCintura), mean = meanCintura, sd = sdCintura) - 
+ pnorm(meanCintura - (3 * sdCintura), mean = meanCintura, sd = sdCintura)) * 100
+
+hist(DF$Cintura, breaks = 15, main = "Histograma de la Cintura", xlab = "Cintura", ylab = "Frecuencia")
+```
+```{r}
+#Edad
+sum(complete.cases(DF$Edad))
+sdEdad <- sd(DF$Edad, na.rm = TRUE)
+meanEdad <- mean(DF$Edad, na.rm = TRUE)
+sdEdad / meanEdad * 100
+
+(pnorm(meanEdad + sdEdad, mean = meanEdad, sd = sdEdad) - 
+ pnorm(meanEdad - sdEdad, mean = meanEdad, sd = sdEdad)) * 100
+
+(pnorm(meanEdad + (2 * sdEdad), mean = meanEdad, sd = sdEdad) - 
+ pnorm(meanEdad - (2 * sdEdad), mean = meanEdad, sd = sdEdad)) * 100
+
+(pnorm(meanEdad + (3 * sdEdad), mean = meanEdad, sd = sdEdad) - 
+ pnorm(meanEdad - (3 * sdEdad), mean = meanEdad, sd = sdEdad)) * 100
+
+hist(DF$Edad, breaks = 15, main = "Histograma de la Edad", xlab = "Edad", ylab = "Frecuencia")
+```
+
+```{r}
+#Talla
+sum(complete.cases(DF$Equipo))
+table(DF$Equipo)
+mean(DF$)
+```
+
+```{r}
+#Equ  ipo
+talla <- factor(DF$Talla, levels = c("flaco", "sano", "gordo", "obeso"), ordered = TRUE)
+sum(complete.cases(talla))
+quantile(as.numeric(talla), probs = c(0.25, 0.5, 0.75), na.rm = TRUE)
+```
+
