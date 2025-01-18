@@ -1,0 +1,55 @@
+---
+title: "Resolución del Ejercicio de Eliminatoria"
+author: "Generado automáticamente"
+format: html
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Carga de Datos
+
+```{r}
+# Cargar la librería necesaria
+library(dplyr)
+
+# Cargar los datos
+data <- read.csv("../Eliminatoria.csv")
+
+# Vista previa de los datos
+head(data)
+```
+
+## Respuestas
+
+### 1. Número de observaciones y variables
+
+```{r}
+# Número de observaciones y variables
+num_observaciones <- nrow(data)
+num_variables <- ncol(data)
+
+paste("La tabla tiene", num_observaciones, "observaciones y", num_variables, "variables.")
+```
+
+### 2. Número de países participantes
+
+```{r}
+# Número de países únicos
+num_paises <- data %>% select(País) %>% distinct() %>% nrow()
+
+paste("En la etapa eliminatoria participan", num_paises, "países.")
+```
+
+### 3. Suma de primeros, segundos y terceros lugares
+
+```{r}
+# Suma de lugares obtenidos
+suma_primeros <- sum(data$Primeros)
+suma_segundos <- sum(data$Segundos)
+suma_terceros <- sum(data$Terceros)
+
+paste("Las corredoras participantes ganaron un total de", suma_primeros, "primeros lugares,", 
+      suma_segundos, "segundos lugares y", suma_terceros, "terceros lugares.")
+```

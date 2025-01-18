@@ -1,0 +1,143 @@
+title: "Análisis del Perfil Socioeconómico y Académico de los Estudiantes UTEC" author: "Grupo 1" format: revealjs: theme: beige transition: slide slideNumber: true controls: true progress: true width: 1600 height: 900 editor: markdown: wrap: 72 ---
+
+## Introducción
+
+-   **Relevancia:**
+    -   Factores como transporte, zona de residencia y servicios universitarios afectan el rendimiento académico.
+    -   Este proyecto analiza cómo influyen estos factores en los estudiantes de la UTEC.
+
+------------------------------------------------------------------------
+
+## Objetivos
+
+**General:** - Comprender las características, necesidades y experiencias de los estudiantes de UTEC.
+
+**Específicos:** 1. Examinar el impacto del estrés financiero en el rendimiento académico. 2. Evaluar la relación entre servicios universitarios y desempeño estudiantil. 3. Analizar el efecto del transporte y residencia en el éxito académico. 4. Determinar si las horas de sueño afectan los promedios.
+
+------------------------------------------------------------------------
+
+## Contexto
+
+### Población objetivo:
+
+-   Estudiantes de la Universidad de Ingeniería y Tecnología (UTEC).
+
+### Muestreo:
+
+-   **Muestreo aleatorio simple** para asegurar imparcialidad y representación equitativa.
+
+### Recolección de datos:
+
+-   Encuestas elaboradas en Google Forms.
+-   Variables clave como transporte, sueño, alimentación, y gastos.
+
+------------------------------------------------------------------------
+
+## Variables y Limpieza de Datos
+
+### Variables recolectadas:
+
+1.  Distrito de residencia.
+2.  Medio de transporte y tiempo de viaje.
+3.  Gasto semanal en alimentación y transporte.
+4.  Horas de sueño promedio.
+5.  Satisfacción con servicios universitarios.
+
+### Limpieza:
+
+-   Reestructuración de variables como "Distrito" y "Promedio ponderado".
+-   Eliminación de datos inconsistentes o incompletos.
+
+------------------------------------------------------------------------
+
+## Análisis Descriptivo
+
+### Aspecto Económico:
+
+1.  **Distrito vs Créditos Acumulados:**
+    -   Relación significativa entre residencia y éxito académico.
+2.  **Gasto Semanal vs Promedio Académico:**
+    -   Inversión moderada en alimentación asociada a mejores promedios.
+
+------------------------------------------------------------------------
+
+## Resultados Visuales: Gasto y Transporte
+
+::: {style="text-align: center;"}
+**Gráfico de Créditos por Distrito y Medio de Transporte** *(Inserta los gráficos de barras apiladas aquí)*
+:::
+
+**Conclusión:** - Santiago de Surco muestra mayores créditos acumulados. - Transporte público es el medio más utilizado, incluso en distritos acomodados.
+
+------------------------------------------------------------------------
+
+## Análisis Educativo
+
+### Promedio vs Satisfacción con Servicios:
+
+-   Boxplots indican tendencia positiva entre satisfacción con el comedor y promedio ponderado.
+
+### Promedio vs Horas de Sueño:
+
+-   Relación débil pero sugiere que entre 6-7 horas de sueño favorecen el rendimiento académico.
+
+------------------------------------------------------------------------
+
+## Análisis Probabilístico
+
+### Evento 1:
+
+-   Probabilidad de que un estudiante con promedio \>16 tenga beca: **0.08**.
+
+### Evento 2:
+
+-   Probabilidad de que un estudiante gaste \<200 soles y traiga comida: **0.18**.
+
+**Conclusión:** - Apoyo financiero y hábitos de ahorro influyen en el rendimiento.
+
+------------------------------------------------------------------------
+
+## Variables Aleatorias
+
+### Variables Discretas:
+
+1.  **Facilidad de Estudio:**
+    -   Probabilidad de seleccionar exactamente 120 becados: **2%**.
+
+### Variables Continuas:
+
+2.  **Promedio Académico:**
+    -   Probabilidad de tener promedio entre 15-17: **32%**.
+
+------------------------------------------------------------------------
+
+## Resultados Visuales: Distribuciones
+
+::: {style="text-align: center;"}
+**Distribuciones de Probabilidad** *(Gráficos de distribuciones y acumuladas)*
+:::
+
+------------------------------------------------------------------------
+
+## Conclusiones
+
+1.  **Residencia:**
+    -   Distritos de clase media-alta favorecen el éxito académico.
+2.  **Gasto Moderado:**
+    -   Inversión entre 200-300 soles mejora promedios.
+3.  **Horas de Sueño:**
+    -   6-7 horas asociadas con mejor rendimiento.
+4.  **Facilidad de Estudio:**
+    -   Becas incrementan promedios, destacando su importancia.
+
+------------------------------------------------------------------------
+
+## Recomendaciones
+
+1.  Ampliar acceso a becas y créditos educativos.
+
+2.  Mejorar servicios universitarios como comedores y transporte.
+
+3.  
+
+    ## Fomentar hábitos saludables como horas de sueño adecuadas.

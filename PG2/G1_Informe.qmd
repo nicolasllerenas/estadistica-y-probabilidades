@@ -1,0 +1,1212 @@
+---
+title: "G1_Informe"
+author: 
+  - "Hanks Jean Pierce Vargas Iglesias"
+  - "Nicolás Alejandro Llerena Silva"
+date: "2024-10-21"
+format: html
+editor: visual
+output: html_document
+---
+
+# INTRODUCCIÓN
+
+## 1.1 REVELANCIA
+
+El rendimiento académico de los estudiantes universitarios está influenciado por diversos factores económicos e institucionales, como el transporte público, la zona de residencia y los servicios universitarios. Este proyecto analiza cómo estos factores afectan el bienestar y éxito educativo de los estudiantes de la Universidad de Ingeniería y Tecnología (UTEC).
+
+## 1.2 Objetivos
+
+### 1.2.1 OBJETIVO GENERAL
+
+Analizar el perfil socioeconómico y académico de los estudiantes de la Universidad de Ingeniería y Tecnología (UTEC) , para comprender sus características, necesidades y experiencias en la institución.
+
+### 1.2.2 OBJETIVOS ESPECIFICOS
+
+**- Examinar el impacto del estrés financiero en el bienestar y rendimiento académico.**
+
+**- Evaluar la correlación entre la satisfacción con los servicios básicos (comedor, cafetería) y el desempeño estudiantil.**
+
+**- Analizar cómo el distrito de residencia y el tiempo de transporte influyen en el rendimiento académico.**
+
+**- Determinar si las horas de sueño afectan el promedio académico.**
+
+# 2. Contexto
+
+## 2.1 POBLACIÓN OBJETIVO
+
+los estudiantes de la Universidad de Ingeniería y Tecnología (UTEC).
+
+## 2.2 TIPO DE MUESTREO
+
+Se ha emplea el **muestreo aleatorio simple** para garantizar una representación equitativa. Este método permite seleccionar a los estudiantes de manera completamente aleatoria, sin considerar su entorno académico, carrera o cualquier otra característica, lo que garantiza la imparcialidad en el proceso de selección.
+
+## 2.3 RECOLECCIÓN DE DATOS
+
+Es evidente que los datos utilizados en este estudio serán obtenidos a través de una encuesta diseñada específicamente para este propósito. Por ello, se empleará la herramienta Google Forms para la elaboración y distribución del cuestionario, facilitando la recolección eficiente de la información.
+
+Enlace de nuestro google fomrs:
+
+https://forms.gle/jgc2vvkX7pkrVoXz5
+
+## 2.4-VARIABLES
+
+```         
+1.Distrito donde vive en Lima (nominal) ---\> Para marcar
+
+2.  Sexo (nominal) ---\> Hombre / Mujer / Prefiero no responder
+
+3.  Edad (discreta) ---\> \_\_\_\_\_\_\_\_\_\_\_\_
+
+4.  Estudias en la UTEC (nominal) ------\> Si/no
+
+5.  Carrera profesional (nominal) -----\> para marcar
+
+6.  Año que ingresó a la universidad (ordinal) -----\> \_\_\_\_\_\_
+
+7- Número de cursos matriculado (discreta) -----\> \_\_\_\_\_
+
+8.  Número de crédito acumulados (discreta) -----\> \_\_\_\_\_
+
+9.  Número de crédito acumulado hasta la fecha (nominal) -----\> 0 -50 / 51 -100 / 101 – 150 / 151 – 200 / más de 200
+
+10. Promedio ponderado (último ciclo) (continua) -----\> \_\_\_\_\_\_\_\_
+
+11. Cuenta con alguna facilidad para estudiar en la UTEC (nominal) -----\> Becado/ Crédito Universitario /Ninguno
+
+12. Que tipo de beca (nominal) -----\> completa / parcial
+
+13. Escala de pago en la UTEC (ordinal) -----\> A / B / C / D / E
+
+14. Lugar de procedencia (nominal) -----\>\
+```
+
+extranjero/Lima / provincia
+
+```         
+15. Medio de transporte que utiliza para venir a la UTEC (nominal) -----\> Transporte público / caminando / taxi / auto propio / bicicleta / moto / scooter
+
+16. Tiempo que demora en el transporte para venir a la UTEC (continua) -----\> \_\_\_\_\_\_\_\_\_\_\_
+
+17. Cuántas horas duerme en promedio (continua) -----\> \_\_\_\_\_\_\_\_\_\_
+
+18. Gasto semanal promedio en alimentación (continua) -----\>
+
+19. Gasto semanal promedio en transporte (continua) -----\>
+
+20. Dónde sueles almorzar (nominal) -----\> Traigo mi comida / Comedor de 2do piso / Cafetería 6to piso / Cafetería Piso 11 / Fuera de la universidad
+
+21. Nivel de satisfacción con el comedor de UTEC (ordinal) -----\> TI / I / N / S / TS
+
+22. Nivel de satisfacción con su carrera profesional (ordinal) -----\> TI / I / N / S / TS
+
+23. Como evaluarías tu nivel de inglés (ordinal) -----\> 1-10
+```
+
+### LIMPIEZA DE LA BASE DE DATOS
+
+**1- Leer la base de datos**
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+DF <- read_csv("CUESTIONARIO UTEC(nuevo).csv")
+head(DF)
+
+colnames(DF)
+```
+
+**2- Eliminar las filas sin relación a nuestras variables**
+
+```{r}
+library(dplyr)
+
+DF <- DF %>% select(-`Marca temporal`) 
+
+DF <- DF %>% select(-`¿Qué grupo te invitó a responder la encuesta?`)
+
+DF <- DF %>% select(-`¿Cuál es el nombre completo de la persona del grupo 1 que te invitó a responder la encuesta?`)
+
+DF <- DF %>% select(-`¿Cuál es el nombre completo de la persona del grupo 2 que te invitó a responder la encuesta?`)
+
+DF <- DF %>% select(-`¿Cuál es el nombre completo de la persona del grupo 3 que te invitó a responder la encuesta?`)
+
+DF <- DF %>% select(-`¿Cuál es el nombre completo de la persona del grupo 4 que te invitó a responder la encuesta?`)
+
+```
+
+**3- Reestructuración de la variable Distrito**
+
+```{r}
+grep("Distrito donde vive", colnames(DF), value = TRUE)
+
+colnames(DF)[grep("Distrito donde vive", colnames(DF))] <- "Distrito"
+```
+
+```{r}
+
+DF$Distrito <- gsub("ancon|Ancon","Ancón",DF$Distrito, ignore.case = TRUE)
+DF$Distrito <- gsub("ATE|Ate Vitarte","Ate",DF$Distrito, ignore.case = TRUE)
+
+DF$Distrito<- gsub("barranco","Barranco",DF$Distrito, ignore.case = TRUE)
+DF$Distrito<- gsub("Cabayllo","Carabayllo",DF$Distrito, ignore.case = TRUE)
+
+DF$Distrito<- gsub("callao","Callao",DF$Distrito, ignore.case = TRUE)
+
+DF$Distrito <- gsub("Chorillos|ChorriGOD|Chorrillos","Chorrillo",DF$Distrito, ignore.case = TRUE)
+
+DF$Distrito <- gsub("Cercado de  Lima| Cercado de lima"," Cercado de Lima",DF$Distrito, ignore.case = TRUE)
+
+DF$Distrito <- gsub("comas","Comas",DF$Distrito, ignore.case = TRUE)
+DF$Distrito <- gsub("El Agustino|El agustino","el Agustino",DF$Distrito, ignore.case = TRUE)
+
+DF$Distrito <- gsub("Indepencia|independencia","Independencia",DF$Distrito, ignore.case = TRUE)
+
+DF$Distrito<- gsub("Jesus maría|Jesús María","Jesus María",DF$Distrito, ignore.case = TRUE)
+
+DF$Distrito <- gsub("Jesus Maria, La Molina|La Molina|La molina|Molina","la Molina",DF$Distrito, ignore.case = TRUE)
+
+DF$Distrito <- gsub("la victoria|La victoria|La victorias","La Victoria",DF$Distrito, ignore.case = TRUE)
+
+DF$Distrito <- gsub("LIMA","Lima",DF$Distrito, ignore.case = TRUE)
+
+DF$Distrito <- gsub("Los olivos","los Olivos",DF$Distrito, ignore.case = TRUE)
+
+DF$Distrito <- gsub("Lurigancho chosica|Lurigancho - Chosica|Lurigancho Chosica","Lurigancho",DF$Distrito, ignore.case = TRUE)
+
+DF$Distrito <- gsub("magdalena del mar|Magdalena del Mar","Magdalena del mar",DF$Distrito, ignore.case = TRUE)
+
+DF$Distrito<- gsub("Pueblo libre","Pueblo Libre",DF$Distrito, ignore.case = TRUE)
+
+DF$Distrito <- gsub("Puente piedra","Puente Piedra",DF$Distrito, ignore.case = TRUE)
+
+DF$Distrito<- gsub("rimac|Rímac","Rimac",DF$Distrito, ignore.case = TRUE)
+DF$Distrito <- gsub("san isidro","San Isidro",DF$Distrito, ignore.case = TRUE)
+
+DF$Distrito <- gsub("san Juan de Lurigancho|San juan de lurigancho|San Juan De Lurigancho","San Juan de Lurigancho",DF$Distrito, ignore.case = TRUE)
+
+DF$Distrito <- gsub("San juan de miraflores","San Juan de Miraflores",DF$Distrito, ignore.case = TRUE)
+
+DF$Distrito <- gsub("San Martin de porres|San Martin De Porres|San Martín de Porres|San martin porras|Sana martín de porres|san martí de porres","San Martin de Porres",DF$Distrito, ignore.case = TRUE)
+
+DF$Distrito <- gsub("San miguel","San Miguel",DF$Distrito, ignore.case = TRUE)
+
+DF$Distrito<- gsub("Santiago de Suirco|Santiago de surco|surco|Surco ","Santiago de Surco ",DF$Distrito, ignore.case = TRUE)
+
+DF$Distrito <- gsub("surquillo","Surquillo",DF$Distrito, ignore.case = TRUE)
+
+DF$Distrito <- gsub("Villa el salvador","Villa el Salvador",DF$Distrito, ignore.case = TRUE)
+
+DF$Distrito <- gsub("Villa maria del triunfo","Villa María del Triunfo",DF$Distrito, ignore.case = TRUE)
+
+```
+
+**4- Convertir variables categoricas a númericas**
+
+```{r}
+#Variable: Promedio ponderado del último ciclo
+
+DF$`Promedio ponderado del último ciclo\n(e.g. --> 15.25)` <- replace(DF$`Promedio ponderado del último ciclo\n(e.g. --> 15.25)`, DF$`Promedio ponderado del último ciclo\n(e.g. --> 15.25)`== "No la he visto", NA)
+
+DF$`Promedio ponderado del último ciclo\n(e.g. --> 15.25)` <- replace(DF$`Promedio ponderado del último ciclo\n(e.g. --> 15.25)`, DF$`Promedio ponderado del último ciclo\n(e.g. --> 15.25)`== "Todavía curso primer ciclo", NA)
+
+DF$`Promedio ponderado del último ciclo\n(e.g. --> 15.25)` <- replace(DF$`Promedio ponderado del último ciclo\n(e.g. --> 15.25)`, DF$`Promedio ponderado del último ciclo\n(e.g. --> 15.25)`== "Empresa y Consumidor", NA)
+
+
+#Luego pasamos a eliminar los demás datos no correspondientes a datos númericos
+
+DF <- DF %>% mutate(`Promedio ponderado del último ciclo
+(e.g. --> 15.25)`=as.numeric(`Promedio ponderado del último ciclo
+(e.g. --> 15.25)`))
+
+DF$`Promedio ponderado del último ciclo
+(e.g. --> 15.25)` <- ifelse(
+  DF$`Promedio ponderado del último ciclo
+(e.g. --> 15.25)` > 20, NA,
+  DF$`Promedio ponderado del último ciclo
+(e.g. --> 15.25)`
+)
+
+DF$`Promedio ponderado del último ciclo
+(e.g. --> 15.25)` <- ifelse(
+  DF$`Promedio ponderado del último ciclo
+(e.g. --> 15.25)` == 0, NA,
+  DF$`Promedio ponderado del último ciclo
+(e.g. --> 15.25)`
+)
+
+
+```
+
+```{r}
+
+# Limpieza en la variable 'Horas de sueño' habían colocado horas, minutos y h a lado de los datos númericos.
+
+observaciones <- DF$`Cuántas horas duerme en promedio
+(e.g. --> 5)`
+
+observaciones_limpias<- gsub(pattern = "horas|minutos|h", replacement = "", x = observaciones) #Reemplaza por espacios vacíos
+
+DF$`Cuántas horas duerme en promedio
+(e.g. --> 5)`<- trimws(observaciones_limpias) #Elimina los espacios vacíos
+
+
+#Luego pasamos a eliminar los demás datos no correspondientes a datos númericos
+
+DF <- DF %>% mutate(`Cuántas horas duerme en promedio
+(e.g. --> 5)`= as.numeric(`Cuántas horas duerme en promedio
+(e.g. --> 5)`))
+
+```
+
+```{r}
+
+# En la variable 'Tiempo en el transporte' al ser similar a la variable 'Horas de sueño' repetimos el proceso realizado 
+
+observaciones <- DF$`Tiempo en horas que demora en el transporte para venir a la UTEC 
+(e.g. --> 3)`
+
+observaciones_limpias<- gsub(pattern = "horas|minutos|h", replacement = "", x = observaciones)
+
+DF$`Tiempo en horas que demora en el transporte para venir a la UTEC 
+(e.g. --> 3)`<- trimws(observaciones_limpias)
+
+
+DF <- DF %>% mutate(`Tiempo en horas que demora en el transporte para venir a la UTEC 
+(e.g. --> 3)`= as.numeric(`Tiempo en horas que demora en el transporte para venir a la UTEC 
+(e.g. --> 3)`))
+
+```
+
+```{r}
+
+# Limpieza en la variable 'Gasto Semanal en alimentación' como 'Gasto semanal en transporte'. Colocaron 'soles' al lado de sus respuestas númericas.
+
+observaciones <- DF$`Gasto semanal en soles promedio en alimentación
+(e.g. --> 750)`
+
+observaciones2 <- DF$`Gasto semanal en soles promedio en transporte
+(e.g. 120)`
+
+observaciones_limpias1<- gsub(pattern = "soles", replacement = "", x = observaciones)
+
+observaciones_limpias2<- gsub(pattern = "soles", replacement = "", x = observaciones2)
+
+DF$`Gasto semanal en soles promedio en alimentación
+(e.g. --> 750)`<- trimws(observaciones_limpias1)
+
+DF$`Gasto semanal en soles promedio en transporte
+(e.g. 120)`<- trimws(observaciones_limpias2)
+
+
+#Luego pasamos a eliminar los demás datos no correspondientes a datos númericos en ambas variables
+
+DF <- DF %>% mutate(`Gasto semanal en soles promedio en alimentación
+(e.g. --> 750)`= as.numeric(`Gasto semanal en soles promedio en alimentación
+(e.g. --> 750)`))
+
+DF <- DF %>% mutate(`Gasto semanal en soles promedio en transporte
+(e.g. 120)`= as.numeric(`Gasto semanal en soles promedio en transporte
+(e.g. 120)`))
+
+```
+
+**5- Convertir variables númericas a variables ordinales**
+
+```{r}
+#Variable: 'Nivel satisfacción en el comedor'
+
+DF$`Nivel de satisfacción con el comedor de UTEC` <- gsub("1","Totalmente Insatisfecho",DF$`Nivel de satisfacción con el comedor de UTEC`, ignore.case = TRUE)
+
+DF$`Nivel de satisfacción con el comedor de UTEC` <- gsub("2","Insatisfecho",DF$`Nivel de satisfacción con el comedor de UTEC`, ignore.case = TRUE)
+
+DF$`Nivel de satisfacción con el comedor de UTEC` <- gsub("3","Neutro",DF$`Nivel de satisfacción con el comedor de UTEC`, ignore.case = TRUE)
+
+DF$`Nivel de satisfacción con el comedor de UTEC` <- gsub("4","Satisfecho",DF$`Nivel de satisfacción con el comedor de UTEC`, ignore.case = TRUE)
+
+DF$`Nivel de satisfacción con el comedor de UTEC` <- gsub("5","Totalmente Satisfecho",DF$`Nivel de satisfacción con el comedor de UTEC`, ignore.case = TRUE)
+
+```
+
+```{r}
+
+#Variable: 'Nivel satisfacción con la carrera profesional'
+
+DF$`Nivel de satisfacción con su carrera profesional` <- gsub("1","Totalmente Insatisfecho",DF$`Nivel de satisfacción con su carrera profesional`, ignore.case = TRUE)
+
+DF$`Nivel de satisfacción con su carrera profesional` <- gsub("2","Insatisfecho",DF$`Nivel de satisfacción con su carrera profesional`, ignore.case = TRUE)
+
+DF$`Nivel de satisfacción con su carrera profesional` <- gsub("3","Neutro",DF$`Nivel de satisfacción con su carrera profesional`, ignore.case = TRUE)
+
+DF$`Nivel de satisfacción con su carrera profesional` <- gsub("4","Satisfecho",DF$`Nivel de satisfacción con su carrera profesional`, ignore.case = TRUE)
+
+DF$`Nivel de satisfacción con su carrera profesional` <- gsub("5","Totalmente Satisfecho",DF$`Nivel de satisfacción con su carrera profesional`, ignore.case = TRUE)
+
+```
+
+```{r}
+
+#Variable: 'Nivel de inglés'
+
+DF$`¿Cómo evaluarías tu nivel de inglés?` <- gsub("1","Bajo",DF$`¿Cómo evaluarías tu nivel de inglés?`, ignore.case = TRUE)
+
+DF$`¿Cómo evaluarías tu nivel de inglés?` <- gsub("2|3|4","Principiante",DF$`¿Cómo evaluarías tu nivel de inglés?`, ignore.case = TRUE)
+
+DF$`¿Cómo evaluarías tu nivel de inglés?`<- gsub("5|6","Básico",DF$`¿Cómo evaluarías tu nivel de inglés?`, ignore.case = TRUE)
+
+DF$`¿Cómo evaluarías tu nivel de inglés?` <- gsub("7|8|9","Intermedio",DF$`¿Cómo evaluarías tu nivel de inglés?`, ignore.case = TRUE)
+
+DF$`¿Cómo evaluarías tu nivel de inglés?` <- gsub("10","Avanzado",DF$`¿Cómo evaluarías tu nivel de inglés?`, ignore.case = TRUE)
+```
+
+```{r}
+#Variable: 'Número de crédito acumulado hasta la fecha'
+
+DF$`Número de crédito acumulado hasta la fecha` <- gsub("0-50","Primeros ciclos",DF$`Número de crédito acumulado hasta la fecha`, ignore.case = TRUE)
+
+DF$`Número de crédito acumulado hasta la fecha` <- gsub("51-100","Mitad de carrera",DF$`Número de crédito acumulado hasta la fecha`, ignore.case = TRUE)
+
+DF$`Número de crédito acumulado hasta la fecha` <- gsub("101-150","Últimos ciclos",DF$`Número de crédito acumulado hasta la fecha`, ignore.case = TRUE)
+
+DF$`Número de crédito acumulado hasta la fecha` <- gsub("151-200|más de 200","Postgrado",DF$`Número de crédito acumulado hasta la fecha`, ignore.case = TRUE)
+```
+
+**6- Reemplazar los NA de la variable 'Tipo de beca'**
+
+```{r}
+DF$`¿Qué tipo de beca?` <- replace(DF$`¿Qué tipo de beca?`, is.na(DF$`¿Qué tipo de beca?`), "Sin beca")
+```
+
+**7- Filtrar las observaciones que no corresponden a nuestra población**
+
+```{r}
+
+DF <- DF %>% filter(`¿Estudias en la UTEC?` != "No")
+
+```
+
+**8- Casos completos**
+
+```{r}
+#Se comprueba la cantidad de observaciones completas
+sum(complete.cases(DF))
+```
+
+# 3. ANÁLISIS DESCRIPTIVO
+
+En esta sección se buscará relacionar ciertas variables de nuestras bases de datos a fin de poder lograr los objetivos propuestos.
+
+## ANÁLISIS EN EL ASPECTO ECONÓMICO
+
+**A-DISTRITOS VS CRÉDITOS ACUMULADOS**
+
+Son dos variables categóricas, por lo cual, se uso de una tabla de contigencia a fin de poder analizarlas de manera conjunta
+
+```{r}
+tabla_F1<- table(DF$Distrito,DF$`Número de crédito acumulado hasta la fecha`)
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+
+# 2. Crear el gráfico de barras
+
+graf <- ggplot(DF, aes(x = Distrito, fill =`Número de crédito acumulado hasta la fecha`)) +
+  geom_bar(position = "stack", color = "white") +  
+  labs(x = "Distrito", y = "Cantidad de personas", fill = "Rango de Créditos", title = "Distribución de Créditos Acumulados por Distrito") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggsave("grafico2.png", plot = graf, width = 25, height = 20)
+```
+
+A partir del análisis presentado en la tabla y el gráfico, Se identificó una relación significativa entre el distrito de residencia y los créditos acumulados. Santiago de Surco, un distrito de clase media-alta, presentó la mayor concentración de estudiantes con 51-100 créditos. En contraste, distritos como San Martín de Porres quien tiene poca capacidad económica, también mostraron un número relevante de créditos acumulados, evidenciando una posible influencia del entorno en el éxito académico. . Para comprobar si existe verdaderamente una relación entre ambas variables se hace uso de la prueba chi-cuadrado:
+
+```{r}
+chisq.test(DF$Distrito,DF$`Número de crédito acumulado hasta la fecha`)
+```
+
+`Si p-value>0.05 aceptamos la hipotesis nula (no relación)`
+
+`Si p- value<0.05 rechazamos la hipotesis nula (hay relación)`
+
+Teniendo en cuenta el resultado encontrado, así como el analisis realizado se puede afirmar la relación entre ambas variables. Concluyendo con la siguiente hipotesis:
+
+-La Zona de residencia del estudiante puede influir en el número de créditos aprobados, por ende en el éxito academico del Utecsino-
+
+**B-DISTRITOS VS MEDIOS DE TRANSPORTES**
+
+Son dos variables categóricas, por lo cual, se uso de una tabla de contigencia a fin de poder analizarlas de manera conjunta
+
+```{r}
+tabla <- table(DF$Distrito, DF$`Medio de transporte usual hacia UTEC`)
+```
+
+```{r}
+gala <- ggplot(DF, aes(x = Distrito, fill = `Medio de transporte usual hacia UTEC`)) +
+  geom_bar(position = "stack") +  
+  labs(x = "Distrito", 
+       y = "Cantidad de personas", 
+       fill = "Medio de transporte", 
+       title = "Gráfico de Barras Apiladas: Distrito vs Medio de transporte") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_manual(values = c("blue", "green", "orange", "red","grey","yellow","brown","violet","steelblue")) 
+
+ggsave("grafico3.png", plot = gala, width = 25, height = 20)
+```
+
+Los resultados muestran que, San Martín de Porres concentra la mayor afluencia estudiantil, con el transporte público como el medio más utilizado. En Santiago de Surco, estudiantes con 51-100 créditos optan mayoritariamente por transporte público, desafiando la percepción de que mayores recursos se asocian con transporte privado.
+
+**C-PROMEDIO VS GASTO SEMANAL**
+
+Dado que ambas son variables numéricas, se utilizó el coeficiente de correlación de Pearson con el objetivo de evaluar la relación lineal entre ellas.
+
+```{r}
+cor.test(DF$`Gasto semanal en soles promedio en alimentación
+(e.g. --> 750)`,DF$`Promedio ponderado del último ciclo
+(e.g. --> 15.25)`,method = "spearman")
+```
+
+La relación positiva entre las variables es extremadamente débil, como lo refleja la pendiente positiva del modelo. Esto indica que, aunque existe una tendencia creciente en la relación entre las dos variables, su magnitud es mínima y no sugiere una asociación significativa.
+
+```{r}
+ggplot(DF, aes(x = cut(DF$`Gasto semanal en soles promedio en alimentación\n(e.g. --> 750)`, 
+                       breaks = seq(0, 500, by = 100)), 
+               y = DF$`Promedio ponderado del último ciclo\n(e.g. --> 15.25)`)) +
+  geom_boxplot(fill = "lightblue") +
+  labs(x = "Rango de Gasto Semanal", y = "Promedio Ponderado", title = "Boxplot de Gasto Semanal vs Promedio Ponderado") +
+  scale_y_continuous(limits = c(0, 20)) +
+  theme_minimal()
+```
+
+El análisis mostró una correlación muy débil entre el promedio académico y el gasto semanal en alimentación. Sin embargo, estudiantes que invierten entre 200 y 300 soles semanales tienden a obtener mejores promedios, sugiriendo que una mayor inversión en alimentación podría estar vinculada al éxito académico.
+
+## 1.2 ANÁLISIS EN EL ASPECTO EDUCATIVO
+
+**PROMEDIO PONDERADO VS NIVEL DE SASTIFACCIÓN CON EL COMEDOR**
+
+Es una variable númerica comparada con una categórica ordinal, por lo cual, no se permite el uso de la correlación por "falta de datos".
+
+```{r}
+#correlation_result <- cor(as.numeric(DF$`Nivel de satisfacción con el comedor de UTEC`),DF$`Promedio ponderado del último ciclo
+#(e.g. --> 15.25)`, method = "spearman")
+```
+
+Es así que, pese a no poder utilizar la formula de correlación para indicar el grado de correlación entre las variables se ha dispuesto de un diagrama de boxplots a fin de analizar la tendencia de los alumnos.
+
+```{r}
+DF$`Nivel de satisfacción con el comedor de UTEC` <- factor(DF$`Nivel de satisfacción con el comedor de UTEC`, 
+  levels = c( "Totalmente Insatisfecho","Insatisfecho","Neutro","Satisfecho", "Totalmente Satisfecho"), ordered = TRUE)
+
+ggplot(DF, aes(x =`Nivel de satisfacción con el comedor de UTEC`, y =`Promedio ponderado del último ciclo
+(e.g. --> 15.25)` )) +
+  geom_boxplot(fill = "lightblue") +
+  labs(x = "Satisfacción", y = "Promedio Ponderado", title = "Boxplot de Promedio Ponderado por Satisfacción") + scale_y_continuous(limits = c(0, 20))+ 
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+
+```
+
+La relación entre la satisfacción con el comedor y el promedio ponderado es débil, pero podría haber un impacto indirecto. Por ejemplo, una mayor satisfacción con el comedor podría estar relacionada con un mayor bienestar general, lo que facilita un rendimiento académico más estable. Sin embargo, para confirmar esta hipótesis, se requeriría un análisis más profundo que contemple factores adicionales, como hábitos alimenticios y el uso del comedor.
+
+**B-PROMEDIO VS HORA DE SUEÑO**
+
+Dado que ambas son variables numéricas, se utilizó el coeficiente de correlación de Pearson con el objetivo de evaluar la relación lineal entre ellas, asumiendo previamente que las variables presentan una distribución normal.
+
+```{r}
+shapiro.test(DF$`Cuántas horas duerme en promedio
+(e.g. --> 5)`)
+shapiro.test(DF$`Promedio ponderado del último ciclo
+(e.g. --> 15.25)`)
+```
+
+No hay distribución normal, por consiguiente, es necesario utilizar el coeficiente de Spearman
+
+```{r}
+cor.test(DF$`Cuántas horas duerme en promedio
+(e.g. --> 5)`,DF$`Promedio ponderado del último ciclo
+(e.g. --> 15.25)`,method = "spearman")
+```
+
+La relación negativa entre las variables es extremadamente débil, como lo refleja la pendiente negativa del modelo. Esto indica que, aunque existe una tendencia decreciente en la relación entre las dos variables, su magnitud es mínima y no sugiere una asociación significativa.
+
+```{r}
+ggplot(DF, aes(x = as.factor(`Cuántas horas duerme en promedio\n(e.g. --> 5)`), 
+               y = `Promedio ponderado del último ciclo\n(e.g. --> 15.25)`)) +
+  geom_boxplot(fill = "lightblue") +
+  labs(x = "Horas de sueño", y = "Promedio ponderado", title = "Boxplot de Horas de Sueño vs Promedio Ponderado") +
+  scale_y_continuous(limits = c(0, 20)) +
+  theme_minimal()
+```
+
+El uso del gráfico boxplot ha demostrado ser una herramienta más informativa, ya que permite visualizar de manera más clara la distribución de los promedios académicos en función de las horas de sueño.
+
+En general, los estudiantes que duermen entre 5 y 7 horas presentan promedios más altos y estables, con menor dispersión en comparación con aquellos que duermen menos de 4 horas o más de 8 horas. Esto sugiere que una cantidad moderada de sueño podría estar asociada con un mejor rendimiento académico, mientras que tanto la falta extrema como el exceso de sueño parecen tener un impacto negativo en el desempeño.
+
+```{r}
+regre <- lm(DF$`Promedio ponderado del último ciclo
+(e.g. --> 15.25)` ~ DF$`Cuántas horas duerme en promedio
+(e.g. --> 5)`) #Y~ X
+summary(regre)
+```
+
+Además, se emplea el análisis de causalidad para verificar si existe una relación causal entre las variables. Sin embargo, es importante destacar que no se observa una relación de causalidad entre ellas. Aunque se identifica una correlación negativa, esto no implica necesariamente una relación causal. Es decir, la existencia de una correlación negativa entre las variables no debe interpretarse como evidencia de que una variable cause cambios en la otra.
+
+# 4. Analisis Probabilistico
+
+## 4.1 Probabilidad empirica
+
+### Variable 1: Donde suele almorzar -\> Nominal
+
+```         
+**Espacio muestral** = {Traigo comida, Comedor 2do piso, Cafeteria 6to piso, Cafeteria piso 11, Fuera de la universidad, otro}
+
+**Experimiento 1:** Seleccionar una persona al azar del estudio y observar donde suele comer
+
+**Eventos atomicos:**
+
+-   **p1 = Traigo comida:** Seleccionar una persona al azar del estudio que suele traer comida.
+
+-   **p2 = Comedor 2do piso:** Seleccionar una persona al azar del estudio que almuerce en el 2do piso.
+
+-   **p3 = Cafeteria 6to piso:** Seleccionar una persona al azar del estudio que almuuerce en el 6to piso.
+
+-   **p4 = Cafeteria piso 11:** Seleccionar una persona al azar del estudio que almuerce en el piso 11.
+
+-   **p5 = Fuera de la universidad:** Seleccionar una persona al azar del estudio que almuerce afuera de la universidad.
+
+-   **p6 = Otro:** Seleccionar una persona al azar del estudio que almuerce en otro lugar.
+```
+
+**Calculando las probabilidades:**
+
+```{r}
+# total de observaciones
+total <- nrow(DF)
+cat("Tamaño de la muestra =", total, "\n")
+
+# Probabilidades
+p1 <- sum(DF$`¿Dónde sueles almorzar?` == "Traigo mi comida", na.rm = TRUE) / total
+cat("P(X= persona traiga su comida) =", round(p1,2),"\n")
+cat("\n")
+
+p2 <- sum(DF$`¿Dónde sueles almorzar?` == "Comedor de 2do piso", na.rm = TRUE) / total
+cat("P(X= persona almuerce en el 2do piso) =", round(p2,2),"\n")
+cat("\n")
+
+p3 <- sum(DF$`¿Dónde sueles almorzar?` == "Cafetería 6to piso", na.rm = TRUE) / total
+cat("P(X= persona almuerce en la cafeteria del 6to piso) =", round(p3,2),"\n")
+cat("\n")
+
+p4 <- sum(DF$`¿Dónde sueles almorzar?` == "Cafetería Piso 11", na.rm = TRUE) / total
+cat("P(X= almuerce en la cafeteria del piso 11) =", round(p4,2),"\n")
+cat("\n")
+
+p5 <- sum(DF$`¿Dónde sueles almorzar?` == "Fuera de la universidad", na.rm = TRUE) / total
+cat("P(X= almuerce fuera de la universidad) =", round(p5,2),"\n")
+cat("\n")
+
+p6 <- 1 - (p1+p2+p3+p4+p5)
+cat("P(X= persona que almuerce en otro lugar) =", round(p6,2),"\n")
+cat("\n")
+
+#Comprobacion
+comprobacion <- p1+p2+p3+p4+p5+p6
+cat("Comprobacion:", "\n")
+cat("p1+p2+p3+p4+p5+p6 = ", comprobacion, "\n")
+
+```
+
+### Variable 2: Facilidad de estudio -\> nominal
+
+```         
+**Espacio muestral** = (Crédito Universitario, Ninguno, Becado)
+
+**Experimiento 2:** Seleccionar una persona al azar del estudio y observar si cuenta con alguna facilidad de estudio.
+
+**Eventos atómicos:**
+
+**- p1 = Crédito Unversitario:** Seleccionar a una persona al azar del estudio que posea Crédito Universitario
+
+**- p2 = Becado:** Seleccionar una persona al azar del estudio que posea beca.
+
+**- p3 = Ninguno:** Seleccionar una persona al azar del estudio que no cuente con alguna facilidad de estudio
+```
+
+```{r}
+total <- nrow(DF)
+cat("Tamaño de la muestra =", total, "\n")
+
+# Probabilidades
+p1 <- sum(DF$`¿Cuenta con alguna facilidad para estudiar en la UTEC?` == "Crédito Universitario") / total
+cat("P(X= persona que posea Crédito Universitario) =", round(p1,2),"\n")
+cat("\n")
+
+p2 <- sum(DF$`¿Cuenta con alguna facilidad para estudiar en la UTEC?` == "Becado") / total
+cat("P(X= persona que posea beca) =", round(p2,2),"\n")
+cat("\n")
+
+p3 <- sum(DF$`¿Cuenta con alguna facilidad para estudiar en la UTEC?` == "Ninguno") / total
+cat("P(X= persona que no cuente con alguna facilidad de estudio) =", round(p3,2),"\n")
+cat("\n")
+
+#Comprobacion
+comprobacion <- p1+p2+p3
+cat("Comprobacion:", "\n")
+cat("p1+p2+p3= ", comprobacion, "\n")
+
+```
+
+## 4.2 Probabilidad Condicional
+
+### **Evento 1: Seleccionar una persona del estudio cuyo promedio sea mayor a 16 y que sea becado.**
+
+#### **Definicion**
+
+**E1 = A n B**
+
+**Donde A:** Seleccionar una persona al azar del presente estudio cuyo promedio sea mayor a 16.
+
+**Donde B:** Seleccionar una persona al azar del presente estudio cuya condicion sea becaria
+
+```{r}
+#Total de observaciones
+total <- nrow(DF)
+cat("Tamaño de la muestra =", total, "\n")
+
+
+# Cantidad de personas que cumplen A y B
+cant_personas <- sum(DF$`Promedio ponderado del último ciclo
+(e.g. --> 15.25)` > 16 & DF$`¿Cuenta con alguna facilidad para estudiar en la UTEC?`== "Becado",na.rm = TRUE)
+cat("Cantidad de personas cuyo promedio es mayor a 16 y poseen beca =", cant_personas, "\n")
+cat("\n")
+
+#Hallamos la probabilidad
+P_A_n_B = cant_personas / total
+
+cat("P(A ∩ B) =", cant_personas, "/", total, "=", round(P_A_n_B, 2), "\n")
+
+
+```
+
+Obtuvimos que **P(E1) =** **08%.** Lo cual sugiere que las personas con promedio mayor a 16 y que poseen una beca como facilidad de estudio podrian ser relativamente pocas dentro de la universidad de UTEC.
+
+-   **Analizando la dependencia del Primer evento**
+
+Identificaremos teóricamente cuando un evento es o no es dependiente, utilizando estas características/propiedades de la probabilidad.
+
+Si P(A∩B)=P(A)×P(B), los eventos son **Independientes**.
+
+Si P(A∩B)≠P(A)×P(B), los eventos son **Dependientes**.
+
+```{r}
+# P(A) y P(B)
+c_A <- sum(DF$`Promedio ponderado del último ciclo
+(e.g. --> 15.25)` > 16, na.rm = TRUE)
+P_A <-  c_A / total
+cat("Cantidad de personas cuyo promedio es mayor a 16 =", c_A, "\n")
+cat("P(A) =", c_A, "/", total, "=", round(P_A, 2), "\n")
+cat("\n")
+
+c_B <- sum(DF$`¿Cuenta con alguna facilidad para estudiar en la UTEC?` == "Becado", na.rm = TRUE)
+P_B <- c_B  / total
+cat("Cantidad de personas que poseen beca =", c_B, "\n")
+cat("P(B) =", c_B, "/", total, "=", round(P_B, 2), "\n")
+cat("\n")
+
+# P(A) * P(B)
+cat("Calculamos P(A) * P(B): ", "\n")
+cat("P(A) * P(B) =", round(P_A * P_B, 2), "\n")
+cat("\n")
+
+cat("Comparamos con  P(A n B): ", "\n")
+cat("P(A ∩ B) =", round(P_A_n_B, 2), "\n")
+```
+
+Dado los calculos, podemos ver que **P(A) \* P(B) = 0.06** y **P(A ∩ B) = 0.08** son diferentes, entonces podemos afirmar que nuestros eventos son **dependientes** lo que significa que la ocurrencia de uno de ellos afecta la probabilidad de ocurrencia del otro. Es decir, tener un promedio mayor a 16 aumenta significativamente la probabilidad de que una persona sea becada, lo cual sugiere que tener una ayuda financiera como lo es una beca, permite a algunas estudiantes concentrarse mejor en los estudios, lo que resulta en un mejor rendimiento académico.
+
+### **Propiedades**
+
+```{r}
+# P(A | B)
+P_A_B <- P_A_n_B / P_B
+cat("P(A | B) = ", P_A_n_B, "/", P_B, "=" ,round(P_A_B,2), "\n")
+
+```
+
+```{r}
+# P(A U B)
+P_A_U_B <- P_A + P_B - P_A_n_B
+cat("P(A U B) = ", P_A, "+", P_B, "-", P_A_n_B , "=" ,round(P_A_U_B,2), "\n")
+
+```
+
+### **Evento 2: Seleccionar una persona del estudio cuyo gasto semanal promedio en alimentos sea menor a 200 o que traiga comida**
+
+#### **Definicion**
+
+**E1 = C U D**
+
+**Donde C:** Seleccionar una persona al azar del presente estudio cuyo gasto semanal promedio en alimentos sea menor a 200.
+
+**Donde D:** Seleccionar una persona al azar del presente estudio que trae su propia comida
+
+#Prueba de Independencia
+
+```{r}
+# Total de observaciones
+total <- nrow(DF)
+cat("Tamaño de la muestra =", total, "\n")
+
+# Cantidad de personas que cumplen C y D
+cant_personas <- sum(DF$`Gasto semanal en soles promedio en alimentación
+(e.g. --> 750)` < 200 & DF$`¿Dónde sueles almorzar?` == "Traigo mi comida",na.rm = TRUE)
+cat("Cantidad de personas cuyo gasto semanal promedio en alimentos sea menor a 200 o que traiga comida =", cant_personas, "\n")
+cat("\n")
+
+# Hallamos la probabilidad
+P_C_n_D <- cant_personas / total
+
+cat("P(C ∩ D) =", cant_personas, "/", total, "=", round(P_C_n_D,2), "\n")
+
+
+```
+
+Obtuvimos que **P(E2) =** **18%.** Lo cual sugiere que una parte de los estudiantes busca tener un gasto en alimentos moderado o elige otra alternativa más económica que es la de traer comida a la universidad. Tambien podriamos sugerir que parte de estos estudiantes tiene limitaciones financieras que los llevan a ser mas cuidadosos con sus gastos.
+
+-   **Analizando la dependencia del Segundo evento**
+
+Identificaremos teóricamente cuando un evento es o no es dependiente, utilizando estas características/propiedades de la probabilidad.
+
+Si P(C∩D)=P(C)×P(D), los eventos son **Independientes**.
+
+Si P(C∩D)≠P(C)×P(D), los eventos son **Dependientes**.
+
+```{r}
+# P(C) y P(D)
+c_C <- sum(DF$`Gasto semanal en soles promedio en alimentación
+(e.g. --> 750)` < 200 , na.rm = TRUE)
+P_C <-  c_C / total
+cat("Cantidad de personas cuyo gasto semanal promedio en alimentos es menor a 200 =", c_A, "\n")
+cat("P(C) =", c_C, "/", total, "=", round(P_C, 2), "\n")
+cat("\n")
+
+c_D <- sum(DF$`¿Dónde sueles almorzar?` == "Traigo mi comida",na.rm = TRUE)
+P_D <-  c_D / total
+cat("cantida de personas que traen comida =", c_D, "\n")
+cat("P(D) =", c_D, "/", total, "=", round(P_D, 2), "\n")
+cat("\n")
+
+# P(C) * P(D) y comparamos con P(C n D)
+cat("Calculamos P(C) * P(D): ", "\n")
+cat("P(C) * P(D) =", round(P_C * P_D,2), "\n")
+cat("\n")
+
+cat("Comparamos con  P(C n D): ", "\n")
+cat("P(C ∩ D) =", round(P_C_n_D,2), "\n")
+
+
+```
+
+Dado los calculos, podemos vver que **P(C) \* P(D) = 0.2** y **P(A ∩ B) = 0.18** son diferentes, entonces podemos afirmar que nuestros eventos son **dependientes** lo cual podemos inferir que tener un gasto promedio en alimentos menor a 200 aumenta significativamente traer comida a la universidad en comparacion de otros estudiantes. Esto podria indicar que los estudiantes que buscan ahorrar, eligen como alternativa traer comida a la universidad.
+
+### **Propiedades**
+
+```{r}
+# P(C | D)
+
+P_C_D <- P_C_n_D / P_D
+cat("P(C | D) = ", P_C_n_D, "/", P_D, "=" ,round(P_C_D,2), "\n")
+
+```
+
+```{r}
+#  P(C U D)
+P_C_U_D <- P_C + P_D - P_C_n_D
+cat("P(A U B) = ", P_C, "+", P_D, "-", P_C_n_D , "=" ,round(P_C_U_D,2), "\n")
+```
+
+## 4.3 Variables Aleatorias
+
+### **Variables Discretas**
+
+**seleccionamos la variable de estudio: Facilidad de estudio -\> nominal** n-\> 441
+
+**Construcción del caso** Se busca realizar un subsiguiente estudio donde las personas que participaron en este primer estudio asistan a una competencia de conocimientos y seleccionar solo aquellas que cuenten con la facilidad de estudio de ser becado. Entonces, ¿Cuál es la probabilidad de seleccionar exactamente 120 personas del total que cuenten con esta característica?
+
+-   **Variable Aleatoria Discreta X1:**
+
+    -   **X1**: Representa el número de personas que poseen una beca en el conjunto de 441 participantes del estudio.
+
+    -   **Distribución**: Dado que estamos interesados en contar el número de éxitos (personas con beca) en un número fijo de ensayos (participantes de estudio), y cada ensayo tiene solo dos posibles resultados (que posea la facilidad de beca o no), X1 se distribuye binomialmente.
+
+    -   **Parámetros**:
+
+        -   n = 441: Tamaño de la muestra
+
+        -   p : probabilidad de seleccionar a una persona que tenga la facilidad de estudio de una beca.
+
+-   **Formulación Matemática:**
+
+    **X1 ≈ Binomial(n,p)**
+
+**Hallar la probabilidad con la Distribución Binomial**
+
+```{r}
+# Parametrod
+n <- nrow(DF)
+k <- 120
+
+
+# Calcular la proporción de éxitos en toda la muestra
+personas_becadas <- sum(DF$`¿Cuenta con alguna facilidad para estudiar en la UTEC?` == "Becado", na.rm = TRUE)  
+p <- round(personas_becadas / n,2)  
+
+#  Distribución binomial
+probabilidad_exacta <- dbinom(k, n, p)
+
+# Imprimir
+print(paste("Probabilidad de éxito (p):", p))
+print(paste("La probabilidad de encontrar exactamente", k, "personas que tengan la facilidad de estudio como beca en una muestra de", n, "personas es:", round(probabilidad_exacta,2)))
+```
+
+Por lo tanto, la probabilidad de que esto ocurra es aproximadamente del 2%, lo cual es un valor muy bajo y sugiere que es altamente improbable que este evento se produzca.
+
+-   **Visualizar gráficos**
+
+Creando gráficos para visualizar tanto la distribución de probabilidad puntual como la función de distribución acumulada para la variable X1.
+
+```{r}
+# Parametros
+n <- nrow(DF)
+k <- 120
+
+# Distribución de probabilidad puntual y acumulada
+x_values <- 0:n
+p_hat <- mean(DF$`¿Cuenta con alguna facilidad para estudiar en la UTEC?` == "Becado", na.rm = TRUE)
+dbinom_values <- dbinom(x_values, size = n, prob = p_hat)
+pbinom_values <- pbinom(x_values, size = n, prob = p_hat)
+
+# Crear gráfico de la distribución binomial puntual
+ggplot(data.frame(x = x_values, y = dbinom_values), aes(x, y)) +
+  geom_bar(stat = "identity", fill = "blue") +
+  labs(title = "Distribución Binomial Puntual", x = "Número de personas que son becadas", y = "Probabilidad")
+
+ggplot(data.frame(x = x_values, y = dbinom_values), aes(x, y)) +
+  geom_bar(stat = "identity", fill = "blue") +
+  labs(title = "Distribución Binomial Puntual (enfocado en 100 a 200)", x = "Número de personas que son becadas", y = "Probabilidad") +
+  xlim(100, 200)
+
+
+# Crear gráfico de la función de distribución acumulada (x <= a)
+ggplot(data.frame(x = x_values, y = pbinom_values), aes(x, y)) +
+  geom_line(color = "red") +
+  labs(title = "Función de Distribución Acumulada (x <= a)", x = "Número de personas que son becadas", y = "Probabilidad Acumulada")
+
+pbinom_values <- pbinom(x_values, size = n, prob = p_hat, lower.tail = FALSE)
+
+# Calcular Esperanza, Varianza y Coeficiente de Variación
+esperanza <- n * p_hat
+varianza <- n * p_hat * (1 - p_hat)
+desviacion_estandar <- sqrt(varianza)
+coeficiente_variacion <- sqrt(varianza) / esperanza
+
+# Resultados estadísticos
+print(paste("Esperanza (Media):", esperanza))
+print(paste("Varianza:", round(varianza,2)))
+print(paste("Desviacion estandar:", round(desviacion_estandar,2)))
+print(paste("Coeficiente de Variación:", round(coeficiente_variacion,2)))
+
+```
+
+El gráfico de **Distribución Puntual,** representa la probabilidad de cada posible numero de éxitos en un experimento binomial, dado un numero especifico de ensayos "n" y una probabilidad de éxito "p" en cada ensayo.
+
+El gráfico de **Distribución Acumulada** , cuando la línea se dispara hacia el valor 1 muy rápidamente y luego se mantiene constante, es típico de una distribución donde la mayoría de las probabilidades acumuladas se alcanzan a un número relativamente bajo de éxitos, comparado con el total posible de "n".
+
+-   **Valor de p**: Con un p de 0.3, la probabilidad media esperada de éxitos es aproximadamente 441×0.3=132.3 Esto significa que el número más probable de éxitos es alrededor de 132.3.
+
+**Ejemplo:**
+
+Calcular la probabilidad de que menos de 120 personas de la muestra tenga una beca como facilidad de estudio. `**Hallar la probabilidad**`
+
+```{r}
+total <- nrow(DF)  
+personas_becadas <- sum(DF$`¿Cuenta con alguna facilidad para estudiar en la UTEC?` == "Becado", na.rm = TRUE)  
+p_hat1 <- round(personas_becadas / total,2) 
+
+# Probabilidad de tener menos de 120 personas con beca
+pbionom_120 <- pbinom(120, size = total, prob = p_hat1)
+
+# Probabilidad
+cat("La probabilidad de exito:", round(p_hat1,2), "\n")
+cat("La probabilidad de tener menos de 120 personas becadas es:", round(pbionom_120,2))
+
+```
+
+Dado que la probabilidad de tener menos de 120 personas con beca como facilidad de estudio es baja (11%), podemos inferir que es poco probable encontrar menos de 120 personas con esta caracteristica en un total de 441 personas encuestadas.
+
+**seleccionamos la segunda variable de estudio: Gasto total de alimezntacion -\> cuantitativa** n-\> 441
+
+**Construcción del caso** Se busca realizar un subsiguiente estudio donde las personas que participaron en este primer estudio asistan a una charla de ahorro y seleccionar solo aquellas que cuenten con un gasto semanal en alimentacion menor a 200. Entonces, ¿Cuál es la probabilidad de seleccionar exactamente 150 personas del total que cuenten con esta característica?
+
+-   **Variable Aleatoria Discreta X2:**
+
+    -   **X2**: Representa el número de personas que cuenten con un gasto semanal en alimentacion menor a 200 en el conjunto de 441 participantes del estudio.
+
+    -   **Distribución**: Dado que estamos interesados en contar el número de éxitos (personas con un gasto semanal en alimentacion menor a 200) en un número fijo de ensayos (participantes de estudio), y cada ensayo tiene solo dos posibles resultados (que tenga un gasto semanal en alimentacion menor a 200 o no), X2 se distribuye binomialmente.
+
+    -   **Parámetros**:
+
+        -   n = 441: Tamaño de la muestra
+
+        -   p : probabilidad de seleccionar a una persona que su gasto semanal en alimentos sea menor a 200.
+
+-   **Formulación Matemática:**
+
+    **X2 ≈ Binomial(n,p)**
+
+**Hallar la probabilidad con la Distribución Binomial**
+
+```{r}
+# Parametros
+n <- nrow(DF)
+k <- 150
+
+
+# Proporcion de exitos
+personas_gasto <- sum(DF$`Gasto semanal en soles promedio en alimentación
+(e.g. --> 750)` < 200 , na.rm = TRUE)  # Personas con gasto semanal menor a 200
+p <- personas_gasto / n  # Probabilidad de éxito
+
+# Distribucion binomial
+prob_exacta <- dbinom(k, n, p)
+
+# Imprimir
+cat("Probabilidad de éxito (p):", round(p,2),"\n")
+cat("La probabilidad de encontrar exactamente", k, "personas que tengan un gasto semanal en alimentos menor a 200 en una muestra de ", n, "personas es:", round(prob_exacta,2)) 
+```
+
+Por lo tanto, la probabilidad de que esto ocurra es aproximadamente del 0%, lo cual es un valor nulo y sugiere que es imposible que este evento se produzca.Grafiquemos la distribución binomial para un mejor detalle de esta probabilidad.
+
+```{r}
+# Parametros
+n <- nrow(DF)
+k <- 120
+
+# Distribución de probabilidad puntual y acumulada
+x_values <- 0:n
+p_hat <- mean(DF$`Gasto semanal en soles promedio en alimentación
+(e.g. --> 750)` < 200 , na.rm = TRUE)
+dbinom_values <- dbinom(x_values, size = n, prob = p_hat)
+pbinom_values <- pbinom(x_values, size = n, prob = p_hat)
+
+# Crear gráfico de la distribución binomial puntual
+ggplot(data.frame(x = x_values, y = dbinom_values), aes(x, y)) +
+  geom_bar(stat = "identity", fill = "blue") +
+  labs(title = "Distribución Binomial Puntual", x = "Número de personas que gastan menos de 200 soles en alimentos semanalmente", y = "Probabilidad")
+
+# Crear gráfico de la distribución binomial puntual con zoom en el eje x (200 a 300)
+ggplot(data.frame(x = x_values, y = dbinom_values), aes(x, y)) +
+  geom_bar(stat = "identity", fill = "blue") +
+  labs(title = "Distribución Binomial Puntual (enfocado en 100 a 200)", x = "Número de personas que gastan menos de 200 soles en alimentos semanalmente", y = "Probabilidad") +
+  xlim(225, 300)
+
+
+# Crear gráfico de la función de distribución acumulada (x <= a)
+ggplot(data.frame(x = x_values, y = pbinom_values), aes(x, y)) +
+  geom_line(color = "red") +
+  labs(title = "Función de Distribución Acumulada (x <= a)", x = "Número de personas que gastan menos de 200 soles en alimentos semanalmente", y = "Probabilidad Acumulada")
+
+# Calcular Esperanza, Varianza y Coeficiente de Variación
+esperanza <- n * p_hat
+varianza <- n * p_hat * (1 - p_hat)
+desviacion_estandar <- sqrt(varianza)
+coeficiente_variacion <- sqrt(varianza) / esperanza
+
+# Imprimir 
+cat("Esperanza (Media):", esperanza, "\n")
+cat("Varianza:", round(varianza,2), "\n")
+cat("Desviacion estandar:", round(desviacion_estandar,2), "\n")
+cat("Coeficiente de Variación:", round(coeficiente_variacion,2), "\n")
+
+```
+
+El gráfico de **Distribución Puntual,** podemos concluir que el número más probable de personas con un gasto semanal en alimentos menor a 200 ronda por los 270, con una probabilidad del 4%, lo cual sugiere no ser tan alta.
+
+El gráfico de **Distribución Acumulada** , nos indica que la probabilidad de tener menos de 270 personas con un promedio en alimentación menor a 200 es imposible, solo cuando se supera este número, la probabilidad se vuelve posible.
+
+-   **Valor de p**: Con un p de 0.61, la probabilidad media esperada de éxitos es aproximadamente 441×0.61=269.01. Esto significa que el número más probable de éxitos (la media de la distribución) es alrededor de 269.
+
+**Ejemplo:**
+
+Calcular la probabilidad de que más del 50% (220) de la muestra cuente con un gasto semanal en alimentos menor a 200 soles.
+
+-   **Hallar la probabilidad**
+
+```{r}
+total <- nrow(DF)  
+personas_gasto <- sum(DF$`Gasto semanal en soles promedio en alimentación
+(e.g. --> 750)` < 200 , na.rm = TRUE)  
+p_hat1 <- round(personas_gasto / total,2)
+
+# Probabilidad de tener más del 50% de personas con un gasto semanal en alimentos menor a 200
+k_50 <- ceiling(0.5 * total)  # Más del 50%
+prob_pbinom <- pbinom(k_50, size = total, prob = p_hat1, lower.tail = FALSE)
+
+
+# Probabilidad
+cat("La probabilidad de tener más del 50% de personas becadas es:", round(prob_pbinom,9), "\n")
+
+```
+
+**Probabilidad asegurada**: La probabilidad calculada de tener más del 50% de personas con un gasto semanal en alimentos menor a 200 es practicamente ya seguro, es decir, el evento ocurrira con certeza.
+
+### Variables Continuas
+
+#### **seleccionamos la primera variable de estudio: promedio ponderado -\> cuantitativa-continua**
+
+```{r}
+# Calcular estadísticas descriptivas
+descriptores_promedio <- DF %>% summarise(
+  Media = mean(`Promedio ponderado del último ciclo
+(e.g. --> 15.25)`, na.rm = TRUE),
+  Mediana = median(`Promedio ponderado del último ciclo
+(e.g. --> 15.25)`, na.rm = TRUE),
+  Desviacion_Estandar = sd(`Promedio ponderado del último ciclo
+(e.g. --> 15.25)`, na.rm = TRUE)
+)
+# Imprimir
+print(descriptores_promedio)
+
+# Crear gráficos de densidad
+hist(DF$`Promedio ponderado del último ciclo
+(e.g. --> 15.25)`, probability = TRUE, col = "lightgray", main = "DIstribucion de la variable Promedio Ponderado",
+     xlab = "promedio", ylab = "Densidad")
+
+# Agregar la curva normal teórica
+curve(dnorm(x, mean = descriptores_promedio$Media, sd = descriptores_promedio$Desviacion_Estandar), add = TRUE, col = "red", lwd = 2)
+
+```
+
+**Promedio ponderado:**
+
+-   La \*\*gráfica muestra una distribución que se asemeja a una normal. Esto es evidente por la forma de una campana simétrica que reflejan los datos.
+
+**Dado que la variable se distribuye como:**
+
+```         
+        **Promedio ponderado ~ N(u, σ)**
+```
+
+**ejemplo** Se desea saber cual es la probabilidad de que una persona del estudio tengan un promedio mayor a 15 y menor a 17.
+
+```{r}
+#Calculamos los descriptores del promedio
+descriptores_promedio <- DF %>% summarise(
+  Media = mean(`Promedio ponderado del último ciclo
+(e.g. --> 15.25)`, na.rm = TRUE),
+  Mediana = median(`Promedio ponderado del último ciclo
+(e.g. --> 15.25)`, na.rm = TRUE),
+  Desviacion_Estandar = sd(`Promedio ponderado del último ciclo
+(e.g. --> 15.25)`, na.rm = TRUE)
+)
+
+media <- descriptores_promedio$Media
+d_e <- descriptores_promedio$Desviacion_Estandar
+n <- sum(DF$`Promedio ponderado del último ciclo
+(e.g. --> 15.25)`, na.rm = TRUE)
+
+p_prom <-  pnorm(17, media, d_e) - pnorm(15, media, d_e)
+
+cat("media: ", round(media,2), "\n")
+cat("desviación estándar: ", round(d_e,2), "\n")
+cat("probabilidad de que una persona tenga un promedio mayor a 15 y menor a 17: ", round(p_prom,2), "\n")
+
+
+```
+
+**media:** La media de del promedio ponderado es de 14.62, lo que puede indicar que los estudiantes tienen una nota relativamente alta.
+
+**probabilidad de que una persona tenga un promedio mayor a 15 y menor a 17:** La probabilidad es del 32%, indicando que un gran grupo de estudiantes tiene un rendimiento alto en comparación al promedio.
+
+**Conclusión general:** El promedio ponderado de los estudiantes es relativamente alto, con una media de 14.62, lo cual sugiere que los estudiantes están obteniendo buenas calificaciones. Además, una parte significativa de los estudiantes (casi un tercio) tiene un rendimiento que supera la media, lo cual se interpreta como un desempeño sobresaliente en comparación del resto.
+
+#### **seleccionamos la segunda variable de estudio: horas de sueño -\> cuantitativa-continua**
+
+```{r}
+# Estadísticas descriptivas
+descriptores_hsueño <- DF %>% summarise(
+  Media = mean(`Cuántas horas duerme en promedio
+(e.g. --> 5)`, na.rm = TRUE),
+  Mediana = median(`Cuántas horas duerme en promedio
+(e.g. --> 5)`, na.rm = TRUE),
+  Desviacion_Estandar = sd(`Cuántas horas duerme en promedio
+(e.g. --> 5)`, na.rm = TRUE)
+)
+# Estadísticas descriptivas
+print(descriptores_hsueño)
+
+# Crear gráficos de densidad y Q-Q plots
+hist(DF$`Cuántas horas duerme en promedio
+(e.g. --> 5)`, probability = TRUE, col = "lightgray", main = "DIstribucion de la variable horas de sueño",
+     xlab = "horas de sueño", ylab = "Densidad")
+
+# Agregar la curva normal teórica
+curve(dnorm(x, mean = descriptores_hsueño$Media, sd = descriptores_hsueño$Desviacion_Estandar), add = TRUE, col = "red", lwd = 2)
+
+```
+
+\*Horas de sueño:\*\*
+
+-   La gráfica muestra una distribución que se asemeja a una normal. Esto es evidente por la forma de una campana simétrica que reflejan los datos.
+
+**Dado que la variable se distribuye como:**
+
+```         
+        **Promedio ponderado ~ N(u, σ)**
+```
+
+**ejemplo** Se desea saber cual es la probabilidad de que una persona duerma entre 6 y 8 horas
+
+```{r}
+#Calculamos los descriptores del promedio
+descriptores_hsueño <- DF %>% summarise(
+  Media = mean(`Cuántas horas duerme en promedio
+(e.g. --> 5)`, na.rm = TRUE),
+  Mediana = median(`Cuántas horas duerme en promedio
+(e.g. --> 5)`, na.rm = TRUE),
+  Desviacion_Estandar = sd(`Cuántas horas duerme en promedio
+(e.g. --> 5)`, na.rm = TRUE)
+)
+
+media <- descriptores_hsueño$Media
+d_e <- descriptores_hsueño$Desviacion_Estandar
+n <- sum(DF$`Cuántas horas duerme en promedio
+(e.g. --> 5)`, na.rm = TRUE)
+
+p_prom <-  pnorm(4, media, d_e) - pnorm(2, media, d_e)
+
+cat("media: ", round(media,2), "\n")
+cat("desviación estándar: ", round(d_e,2), "\n")
+cat("probabilidad de que una persona duerma entre 2 a 4 horas: ", round(p_prom,2), "\n")
+
+
+```
+
+**media:** La media de horas de sueño es de 6 horas, lo que puede indicar que los estudiantes duermen poco más de 6 horas. Esto puede ser algo preocupante, dado que lo recomendable es dormir de 7 a 9 horas.
+
+**probabilidad de que una persona duerma entre 2 a 4 horas:** La probabilidad es del 6%, indicando que un pequeño grupo de estudiantes duerme una cantidad de horas significativamente bajo, lo cual es correcto dado que dormir tan pocas horas es insuficiente para el cuerpo humano.
+
+**Conclusión general:** Un promedio de 6 horas de sueño con una variabilidad moderada podría indicar que una buena parte del grupo duerme menos de las horas recomendadas, lo que potencialmente podría tener implicaciones negativas para la salud y el rendimiento académico si se mantieen a largo plazo.
+
+# Conclusiones:
+
+Zona de Residencia: Los estudiantes que residen en distritos de ingresos medios-altos (Santiago de Surco, San Borja, La Molina) tienden a tener un mayor número de créditos acumulados. Esto sugiere que las condiciones económicas y sociales del lugar de residencia pueden influir positivamente en el éxito académico.
+
+Gasto en Alimentación: Aunque no existe una relación significativa entre el gasto semanal en alimentación y el promedio académico, se observa que estudiantes que gastan entre 200 y 300 soles tienden a obtener mejores promedios. Esto podría implicar que una inversión moderada en alimentación puede contribuir al rendimiento académico.
+
+Facilidad de Estudio: Tener una beca o crédito universitario no garantiza un rendimiento superior, pero sí parece ser un factor dependiente del promedio académico. Los estudiantes con beca tienden a obtener mejores resultados, lo que resalta la importancia del apoyo financiero.

@@ -1,0 +1,311 @@
+---
+title: "L2 Huevos"
+output: html_notebook
+---
+
+```{r}
+r <- function(x){
+  return(round(x, digits = 2))
+}
+```
+
+
+Un huevo puede ser _bueno_ o _malo_.
+```{r}
+p_malo <- 0.0113
+p_bueno <- 1 - p_malo
+```
+
+Un lote tiene 6000 huevos
+```{r}
+lote <- 6000
+```
+
+# 1a
+
+Modelo para el número de huevos malos en un lote.
+
+Binomial:
+
+```{r}
+n <- lote
+p <- p_malo
+n
+p
+```
+
+$X \sim \mathsf{Bin}(`r n`,`r p`)$
+
+Esperanza y desviación
+```{r}
+n*p
+sqrt(n*p*(1-p))
+r(n*p)
+r(sqrt(n*p*(1-p)))
+```
+# 1b
+
+Modelo para el número de huevos malos en un lote.
+
+Binomial:
+
+```{r}
+n <- lote
+p <- p_bueno
+n
+p
+```
+
+$X \sim \mathsf{Bin}(`r n`,`r p`)$
+
+Esperanza y desviación
+```{r}
+n*p
+sqrt(n*p*(1-p))
+r(n*p)
+r(sqrt(n*p*(1-p)))
+```
+
+# 2a
+
+Separador descarta huevos malos con probabilidad 0.9950 y descarta huevos buenos con probabilidad 0.0007.
+
+```{r}
+p_desc_dado_malo <- 0.9950
+p_desc_dado_bueno <- 0.0007
+```
+
+
+Un buen modelo para el número de huevos descartados es:
+
+Binomial:
+```{r}
+p_desc <- p_desc_dado_malo*p_malo + p_desc_dado_bueno*p_bueno
+p_desc
+```
+
+```{r}
+n <- lote
+p <- p_desc
+n
+p
+```
+
+$X \sim \mathsf{Bin}(`r n`,`r p`)$
+
+Desviación y coeficiente de variación
+```{r}
+sqrt(n*p*(1-p))
+sqrt(n*p*(1-p))/(n*p)
+r(sqrt(n*p*(1-p)))
+r(sqrt(n*p*(1-p))/(n*p))
+```
+
+# 2b
+
+Separador descarta huevos malos con probabilidad 0.9950 y descarta huevos buenos con probabilidad 0.0007.
+
+```{r}
+p_desc_dado_malo <- 0.9950
+p_desc_dado_bueno <- 0.0007
+```
+
+
+Un buen modelo para el número de huevos no descartados es:
+
+Binomial:
+```{r}
+p_desc <- p_desc_dado_malo*p_malo + p_desc_dado_bueno*p_bueno
+p_desc
+```
+
+```{r}
+n <- lote
+p <- 1 - p_desc
+n
+p
+```
+
+$X \sim \mathsf{Bin}(`r n`,`r p`)$
+
+Desviación y coeficiente de variación
+```{r}
+sqrt(n*p*(1-p))
+sqrt(n*p*(1-p))/(n*p)
+r(sqrt(n*p*(1-p)))
+r(sqrt(n*p*(1-p))/(n*p))
+```
+
+# 3a
+
+Dado que un huevo es descartado, ¿cuál es la probabilidad de que esté malo?
+
+```{r}
+p_malo_dado_desc <- p_desc_dado_malo*p_malo/p_desc
+p_malo_dado_desc
+```
+
+# 3b
+
+Dado que un huevo es descartado, ¿cuál es la probabilidad de que esté bueno?
+
+```{r}
+p_malo_dado_desc <- p_desc_dado_malo*p_malo/p_desc
+1 - p_malo_dado_desc
+
+p_desc_dado_bueno*p_bueno/p_desc
+```
+
+# 3c
+
+Dado que un huevo no es descartado, ¿cuál es la probabilidad de que esté malo?
+
+```{r}
+p_malo_dado_ndesc <- (1 - p_desc_dado_malo)*p_malo/(1 - p_desc)
+p_malo_dado_ndesc
+r(p_malo_dado_ndesc)
+```
+
+# 3d
+
+Dado que un huevo no es descartado, ¿cuál es la probabilidad de que esté bueno?
+
+```{r}
+p_bueno_dado_ndesc <- 1 - p_malo_dado_ndesc
+p_bueno_dado_ndesc
+r(p_bueno_dado_ndesc)
+```
+
+# 4a
+
+Dado que un lote tiene 100 huevos malos, ¿cuál es la probabilidad de que el separador los descarte todos?
+
+```{r}
+p_desc_dado_malo^100
+dbinom(100, 100, p_desc_dado_malo)
+r(dbinom(100, 100, p_desc_dado_malo))
+100*p_desc_dado_malo
+```
+# 4a
+
+Dado que un lote tiene 100 huevos malos, cual es la probabilidad de que no descarte ningún huevo bueno.
+
+```{r}
+(1 - p_desc_dado_bueno)^(6000-100)
+dbinom(0, 6000-100, p_desc_dado_bueno)
+r(dbinom(0, 6000-100, p_desc_dado_bueno))
+(6000-100)*p_desc_dado_bueno
+```
+
+
+# 5
+
+Los huevos no descartados son colocados en una plancha de 72 huevos.
+
+Según el fabricante, cuando la máquina está bien calibrada, fisura (raja) 1 huevo de cada 10000, de manera independiente para cada huevo procesado. 
+
+Esto quiere decir que un huevo bueno pasará a ser malo al rajarse.
+Un huevo malo, seguirá siendo malo, obteniendo una fisura adicional.
+
+¿Cuál es la probabilidad de que un huevo sea malo dado que no fue descartado?
+
+```{r}
+p_malo_dado_nodesc <- (1 - p_desc_dado_malo)*p_malo/(1 - p_desc)
+p_malo_dado_nodesc
+```
+¿Cuál es la probabilidad que un huevo esté malo después de cargarlo a la plancha?
+```{r}
+p_fisura_dado_bueno_nodesc <- 1/10000
+p_fisura_dado_malo_nodesc <- 1
+```
+
+```{r}
+p_fisura <- p_fisura_dado_bueno_nodesc*(1 - p_malo_dado_nodesc) + p_fisura_dado_malo_nodesc*p_malo_dado_nodesc
+p_fisura
+```
+Un buen modelo para el número de huevos malos en la plancha es
+
+Binomial:
+```{r}
+n <- 72
+p <- p_fisura
+n
+p
+```
+
+$X \sim \mathsf{Bin}(`r n`,`r p`)$
+
+Esperanza y desviación
+```{r}
+n*p
+sqrt(n*p*(1-p))
+r(n*p)
+r(sqrt(n*p*(1-p)))
+```
+
+Coeficiente de variación
+```{r}
+sqrt(n*p*(1-p))/(n*p)
+r(sqrt(n*p*(1-p))/(n*p))
+```
+
+¿Cuál es la probabilidad de que una plancha tenga algún huevo fisurado?
+
+```{r}
+pbinom(0, 72, p_fisura, lower.tail = FALSE)
+```
+Una plancha con huevos fisurados es una plancha mala.
+
+
+# 6 
+
+Mencionar mantenimiento.
+
+Desde cada mantenimiento, la tercera vez que el ovoscopio detecta una plancha mala registrará una **incidencia**. Al hacer cualquier tipo de mantenimiento se borrarán las incidencias registradas al reiniciar la operación.
+
+¿Cuál es la probabilidad de que una plancha esté mala?
+
+```{r}
+q <- pbinom(0, 72, p_fisura, lower.tail = FALSE)
+q
+```
+¿Cuál es la probabilidad de que ocurra una incidencia al procesar las primeras 80 planchas desde el último mantenimiento?
+
+$$Y\sim \mathsf{BinNeg}(3, q)$$
+
+```{r}
+pnbinom(80-3, size = 3, prob = q)
+pbinom(2, 80, prob = q, lower.tail = FALSE)
+pgeom(80 - 1, prob = q^3)
+```
+
+# 7
+
+Si la máquina opera de manera continua sin hacer mantenimientos hasta detectar una incidencia cada cuantas planchas en promedio debe hacer mantenimiento.
+
+```{r}
+3/q
+r(3/q)
+(sqrt(3*(1-q)/(q^2)))
+r((sqrt(3*(1-q)/(q^2))))
+(sqrt(3*(1-q)/(q^2)))/(3/q)
+r((sqrt(3*(1-q)/(q^2)))/(3/q))
+
+
+```
+# 8
+
+Si cada cada plancha se procesa en 1.2 segundos y el mantenimiento dura 24 segundos.
+
+¿Cuál es la duración promedio (en segundos) del ciclo de mantenimiento y procesado de planchas?
+```{r}
+3/q*1.2+24
+r(3/q*1.2+24)
+```
+¿Cuál es el promedio de huevos procesados por ciclo?
+
+```{r}
+3/q*72+0
+r(3/q*72+0)
+```
+

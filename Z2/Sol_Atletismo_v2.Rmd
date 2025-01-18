@@ -1,0 +1,517 @@
+---
+title: "Laboratorio 2"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: no
+      smooth_scroll: no
+    number_sections: true
+    theme: yeti
+---
+
+<style type="text/css">
+#TOC {
+      color: gray; 
+      }
+.respuesta {color: #211A23;
+            background:#EDF7FF;
+            border-color:#7C9DBF;
+            border-left: 5px solid #7C9DBF;
+            padding: 0.5em;
+            margin-bottom: 10px}
+</style>
+
+> # **Introducción**
+
+En una competencia panamericana de atletismo participaron 117 corredoras en la categoría de los 100 metros planos.
+
+Las corredoras se asignaron a 16 grupos aleatoriamente con la única restricción que todos los grupos debían tener al menos 7 integrantes y a lo mucho 8.
+
+Cada grupo realizó 4 carreras en dos días consecutivos y se promediaron sus tiempos y al finalizar la primera etapa de la competencia se tomaron las 32 corredoras con los mejores tiempos promedio.
+
+Para la etapa eliminatoria se asignan aleatoriamente, en sorteo público, los grupos de eliminatoria de cada corredora.
+
+Al terminar cada carrera eliminatoria se seleccionarán el primer y segundo lugar de la misma para pasar a la final.
+
+A este nivel de competencia, las corredoras tienen habilidades similares y podemos considerar que sus probabilidades de ganar son esencialmente las mismas.
+
+El archivo "Corredoras.csv" contiene información relevante sobre las participantes de las carreras eliminatorias.
+
+En el archivo se detallan las medallas obtenidas por las corredoras en las últimas 33 competencias acreditadas internacionalmente. No todas las corredoras participaron en todas las competencias.
+
+Las variables del archivo son:
+
++ `Nombre`: El primer nombre de la corredora.
++ `Apellido`: El primer apellido de la corredora.
++ `Pais`: El país que representa la corredora en la competencia.
++ `Primeros`: Número de primeros lugares en las en la últimas 33 competencias acreditadas.
++ `Segundos`: Número de Segundos lugares en las en la últimas 33 competencias acreditadas.
++ `Terceros`: Número de Terceros lugares en las en la últimas 33 competencias acreditadas.
++ `Camiseta`: Número de la camiseta en esta competencia.
++ `Competencias`: Número de participaciones en las en la últimas 33 competencias acreditadas.
+
+
+Antes de resolver los ejercicios, se crea una función que redondea los resultados a dos dígitos decimales:
+
+```{r}
+r <- function(x){
+  return(round(x, digits = 2))
+}
+```
+
+Ahora, se cargan las librerías necesarias para resolver los ejercicios:
+
+```{r warning=FALSE}
+library(readr)
+library(dplyr)
+```
+
+Se carga el archivo `Eliminatoria.csv` en el objeto _DF_.
+
+```{r}
+DF <- read_csv("Eliminatoria.csv")
+
+# read_csv: lee archivos csv separados por coma.
+# read_csv2: lee archivos csv separados por punto y coma.
+```
+
+Se revisa el _dataframe_ creado. 
+
+```{r}
+DF
+
+
+```
+
+> # **Pregunta 1**
+
+>> ## **Pregunta 1.1. Número de observaciones**
+
+¿Cuántas observaciones tiene la tabla de corredoras de la etapa eliminatoria?
+
+::::{.respuesta}
+
+```{r}
+nrow(DF)
+
+# nrow: cuenta las filas de un dataframe.
+```
+
+::::
+
+>> ## **Pregunta 1.2. Número de variables**
+
+¿Cuántas variables tiene la tabla de corredoras de la etapa eliminatoria?
+
+::::{.respuesta}
+
+```{r}
+ncol(DF)
+
+# ncol: cuenta las columnas de un dataframe
+```
+
+::::
+
+>> ## **Pregunta 1.3. Número de países**
+
+¿Cuántos países participan en la ronda eliminatoria?
+
+::::{.respuesta} 
+
+Para resolver esta pregunta, se contarán los países únicos en la variable _País_.
+
+```{r}
+length(unique(DF$País))
+
+# length: cuenta la longitud de los vectores
+# unique: devuelve un vector, dataframe o lista sin elementos duplicados
+```
+
+::::
+
+>> ## **Pregunta 1.4. Número de ganadores por podio**
+
+¿Cuántas participantes ganaron los primeros,segundos y terceros lugares respectivamente?
+
+::::{.respuesta} 
+
+Para resolver esta pregunta, se sumarán los valores de las columnas _Primeros_, _Segundos_ y _Terceros_, los cuales tienen como índice de columna 4, 5 y 6 respectivamente.
+
+```{r}
+colSums(DF[,4:6])
+
+# colSums: devuelve la suma de los valores de una o varias columnas
+```
+
+::::
+
+> # **Pregunta 2**
+
+¿Cuál es el ... de corredoras por país en la ronda eliminatoria?
+
+::::{.respuesta} 
+
+Se crea un objeto que contiene las frecuencia absolutas de la variable _país_.
+
+```{r}
+TP <- table(DF$País)
+
+cat('El mínimo de corredoras por país en la ronda eliminatoria es:',r(min(TP)),'\n')
+cat('El máximo de corredoras por país en la ronda eliminatoria es:',r(max(TP)),'\n')
+cat('El promedio de corredoras por país en la ronda eliminatoria es:',r(mean(TP)),'\n')
+cat('La mediana de corredoras por país en la ronda eliminatoria es:',r(median(TP)),'\n')
+cat('La desviación estándar de corredoras por país en la ronda eliminatoria es:',r(sd(TP)),'\n')
+cat('El coeficiente de variación de corredoras por país en la ronda eliminatoria es:',r(sd(TP)/mean(TP)))
+
+# table: devuelve las frecuencias absolutas de (las categorías de) una variable
+# min: devuelve el mínimo de un vector
+# max: devuelve el máximo de un vector
+# mean: devuelve el promedio de un vector
+# median: devuelve la mediana de un vector
+# sd: devuelve la desviación estándar de un vector
+```
+
+::::
+
+> # **Pregunta 3**
+
+Tomando en cuenta que todas las corredoras tienen las capacidades necesarias para participar en la competencia, ¿de cuántas maneras era posible obtener el conjunto de corredoras que están participando en la eliminatoria?
+
+::::{.respuesta}
+
+Son 117 corredoras y solo 32 están participando en la eliminatoria, por lo que, para conocer de cuántas maneras es posible obtener el conjunto de corredoras que participan en la eliminatoria, solo basta tomar la combinatoria de 32 en 117:
+
+$$\binom{117}{32}$$
+
+```{r}
+r(choose(117,32))
+
+# choose(n,k): devuelve la combinación de "k" en "n"
+```
+
+::::
+
+> # **Pregunta 4**
+
+Si todas las corredoras tienen la misma probabilidad de resultar vencedoras al final, responder:
+
+>> ## **Pregunta 4.1.**
+
+¿cuál es la probabilidad de que la ganadora de la competencia sea peruana?
+
+::::{.respuesta}
+
+En la fase eliminatoria solo hay 3 corredoras peruanas de 32 clasificadas. Por lo tanto, la probabilidad de que una peruana sea la ganadora de la competencia es:
+
+$$\frac{3}{32}$$
+```{r}
+3/32
+r(3/32)
+```
+
+::::
+
+>> ## **Pregunta 4.2.**
+
+¿Cuál es la probabilidad de que la ganadora de la competencia sea estadounidense?
+
+::::{.respuesta}
+
+En la fase eliminatoria solo hay 7 corredoras estadounidenses de 32 clasificadas. Por lo tanto, la probabilidad de que una estadounidense sea la ganadora de la competencia es:
+
+$$\frac{7}{32}$$
+
+```{r}
+7/32
+r(7/32)
+```
+
+::::
+
+>> ## **Pregunta 4.3.**
+
+¿Cuál es la probabilidad de que la ganadora de la competencia sea trinitaria?
+
+::::{.respuesta}
+
+En la fase eliminatoria solo hay 2 corredoras trinitarias de 32 clasificadas. Por lo tanto, la probabilidad de que una trinitaria sea la ganadora de la competencia es:
+
+$$\frac{2}{32}$$
+
+```{r}
+2/32
+r(2/32)
+```
+
+::::
+
+>> ## **Pregunta 4.4.**
+
+¿Cuál es la probabilidad de que la ganadora de la competencia sea guatemalteca?
+
+::::{.respuesta}
+
+En la fase eliminatoria solo hay 1 corredora guatemalteca de 32 clasificadas. Por lo tanto, la probabilidad de que una guatemalteca sea la ganadora de la competencia es:
+
+$$\frac{1}{32}$$
+
+```{r}
+1/32
+r(1/32)
+```
+
+::::
+
+> # **Pregunta 5**
+
+Si las cuatro carreras eliminatorias se forman aleatoriamente con las 32 participantes.
+
+>> ## **Pregunta 5.1.**
+
+¿De cuántas maneras pueden formarse todas las carreras eliminatorias?
+
+::::{.respuesta}
+
+Al ser 4 carreras eliminatorias, se tiene que:  
+    
++ En la primera carrera eliminatoria se seleccionan 8 corredoras de 32 posibles.  
++ En la segunda, se seleccionan 8 corredoras de 24 (pues 8 ya corrieron en la primera).   
++ En la tercera, se seleccionan 8 corredoras de 16 (pues 8 ya corrieron en la primera y 8 en la segunda).  
++ En la cuarta, se seleccionan 8 corredoras de 8 (pues 8 ya corrieron en la primera, 8 en la segunda y 8 en la tercera).  
+
+Por lo tanto, la respuesta se obtiene con la multiplicación de las respectivas combinaciones:
+
+$$ \binom{32}{8} \binom{24}{8} \binom{16}{8} \binom{8}{8}$$
+
+::::
+
+>> ## **Pregunta 5.2.**
+
+::::{.respuesta}
+
+Resolviendo la expresión anterior, se tiene:
+
+$$
+\require{cancel}
+\begin{aligned}
+&\binom{32}{8} \binom{24}{8} \binom{16}{8} \binom{8}{8}\\
+=&\frac{32!}{(32-8)!8!}\frac{24!}{(24-8)!8!}\frac{16!}{(16-8)!8!}\frac{8!}{(8-8)!8!}\\
+=&\frac{32!}{24!~8!}\frac{24!}{16!~8!}\frac{16!}{8!~8!}\frac{8!}{0!~8!}\\
+=&\frac{32!}{\color{red} {\cancel{24!}}~8!}\frac{\color{red} {\cancel{24!}}}{\color{blue} {\cancel{16!}}~8!}\frac{\color{blue} {\cancel{16!}}}{\color{violet} {\cancel{8!}}~8!}\frac{\color{violet} {\cancel{8!}}}{\underbrace{0!}_{\text{1}}~8!}\\
+=&\frac{32!}{8!~8!~8!~(1)~8!}\\
+=&\frac{32!}{(8!)^4}\\
+\end{aligned}
+$$
+
+::::
+
+>> ## **Pregunta 5.3.**
+
+¿De cuántas maneras pueden quedar todas las peruanas en la misma carrera eliminatoria?
+
+::::{.respuesta}
+
+De las 32 corredoras, 3 peruanas participan en la carrera eliminatoria, por lo tanto, se tiene:
+
++ Al ser 4 carreras eliminatorias en grupos de 8 corredoras, las 3 corredoras peruanas juntas pueden ubicarse en 1 de las 4. Entonces, el número de grupos diferentes de 1 que se pueden formar con las 4 carreras eliminatorias es el combinatorio de 4 en 1.  
++ En la carrera eliminatoria donde coinciden las 3 corredoras peruanas (3 ubicaciones de las 8 disponibles son ocupadas por ellas), hay 5 ubicaciones disponibles y el número de corredoras que pueden ocupar esas 5 ubicaciones son 29 (a las 32 corredoras se restan las 3 corredoras peruanas), es decir, el número de grupos diferentes de 5 que se pueden formar con las 29 corredoras es el combinatorio de 29 en 5.
++ Si ya se determinó la carrera donde las 3 corredoras peruanas coinciden, a las que se agregaron otras 5 corredoras, se tiene 24 corredoras disponibles para completar las 8 participantes de la siguiente carrera eliminatoria. Entonces, el número de grupos diferentes de 8 que se pueden formar con las 24 corredoras es el combinatorio de 24 en 8.
++ Para la subsiguiente carrera eliminatoria, de 8 participantes, se tienen disponibles 16 corredoras. Entonces, el número de grupos diferentes de 8 que se pueden formar con las 16 corredoras es el combinatorio de 16 en 8.
++ Finalmente, para la siguiente carrera eliminatoria, que completa las 4, se tiene 8 corredoras disponibles, que son las restantes. Entonces, el número de grupos diferentes de 8 que se pueden formar con las 8 corredoras es el combinatorio de 8 en 8.
+
+Por lo tanto, la respuesta se obtiene con la multiplicación de los respectivos combinatorios:
+
+$$\binom{4}{1} \binom{29}{5} \binom{24}{8} \binom{16}{8} \binom{8}{8}$$
+
+::::
+
+>> ## **Pregunta 5.4.**
+
+¿De cuantas maneras pueden quedar todas las estadounidenses en la misma carrera eliminatoria?
+
+::::{.respuesta}
+
+De las 32 corredoras, 3 peruanas participan en la carrera eliminatoria, por lo tanto, se tiene:
+
++ Al ser 4 carreras eliminatorias en grupos de 8 corredoras, las 7 estadounidenses juntas pueden ubicarse en 1 de las 4. Entonces, el número de grupos diferentes de 1 que se pueden formar con las 4 carreras eliminatorias es el combinatorio de 4 en 1.  
++ En la carrera eliminatoria donde coinciden las 7 corredoras estadounidenses (7 ubicaciones de las 8 disponibles son ocupadas por ellas), hay 1 ubicación disponible y el número de corredoras que pueden ocupar esa única ubicación son 25 (a las 32 corredoras se restan las 7 corredoras estadounidenses), es decir, el número de grupos diferentes de 1 que se pueden formar con las 25 corredoras es el combinatorio de 25 en 1.
++ Si ya se determinó la carrera donde las 7 corredoras estadounidenses coinciden, a las que se agregó otra corredora, se tiene 24 corredoras disponibles para completar las 8 participantes de la siguiente carrera eliminatoria. Entonces, el número de grupos diferentes de 8 que se pueden formar con las 24 corredoras es el combinatorio de 24 en 8.
++ Para la subsiguiente carrera eliminatoria, de 8 participantes, se tienen disponibles 16 corredoras. Entonces, el número de grupos diferentes de 8 que se pueden formar con las 16 corredoras es el combinatorio de 16 en 8.
++ Finalmente, para la siguiente carrera eliminatoria, que completa las 4, se tiene 8 corredoras disponibles, que son las restantes. Entonces, el número de grupos diferentes de 8 que se pueden formar con las 8 corredoras es el combinatorio de 8 en 8.
+
+Por lo tanto, la respuesta se obtiene con la multiplicación de los respectivos combinatorios:
+
+$$\binom{4}{1} \binom{25}{1} \binom{24}{8} \binom{16}{8} \binom{8}{8}$$
+
+::::
+
+>> ## **Pregunta 5.5.**
+
+¿De cuantas maneras pueden quedar todas las guatemaltecas en la misma carrera eliminatoria?
+
+::::{.respuesta}
+
+De las 32 corredoras, 3 peruanas participan en la carrera eliminatoria, por lo tanto, se tiene:
+
++ Al ser 4 carreras eliminatorias en grupos de 8 corredoras, la única guatemalteca puede ubicarse en 1 de las 4. Entonces, el número de grupos diferentes de 1 que se pueden formar con las 4 carreras eliminatorias es el combinatorio de 4 en 1.  
++ En la carrera eliminatoria donde se ubica la corredora guatemalteca (1 ubicación de las 8 disponibles es ocupada por ella), hay 7 ubicaciones disponibles y el número de corredoras que pueden ocupar estas ubicaciones son 31 (a las 32 corredoras se resta la corredora guatemalteca), es decir, el número de grupos diferentes de 1 que se pueden formar con las 31 corredoras es el combinatorio de 31 en 1.
++ Si ya se determinó la carrera donde la corredora guatemalteca participa, a las que se agregó 7 corredoras, se tiene 24 corredoras disponibles para completar las 8 participantes de la siguiente carrera eliminatoria. Entonces, el número de grupos diferentes de 8 que se pueden formar con las 24 corredoras es el combinatorio de 24 en 8.
++ Para la subsiguiente carrera eliminatoria, de 8 participantes, se tienen disponibles 16 corredoras. Entonces, el número de grupos diferentes de 8 que se pueden formar con las 16 corredoras es el combinatorio de 16 en 8.
++ Finalmente, para la siguiente carrera eliminatoria, que completa las 4, se tiene 8 corredoras disponibles, que son las restantes. Entonces, el número de grupos diferentes de 8 que se pueden formar con las 8 corredoras es el combinatorio de 8 en 8.
+
+Por lo tanto, la respuesta se obtiene con la multiplicación de los respectivos combinatorios:
+
+$$\binom{4}{1} \binom{31}{7} \binom{24}{8} \binom{16}{8} \binom{8}{8}$$
+
+::::
+
+> # **Pregunta 6**
+
+>> ## **Pregunta 6.1.**
+
+¿Cuál es la probabilidad de que todas las peruanas queden en la misma carrera eliminatoria?
+
+::::{.respuesta}
+
+Para calcular esta probabilidad, es necesario hallar:
+
++ La cantidad de maneras posibles de que 3 peruanas estén una misma carrera eliminatoria está determinada por la multiplicación de:
+  + La cantidad de maneras en las que se puede ubicar en una de las 4 eliminatorias está dado por la combinatoria de 4 en 1. 
+  + Dentro de la carrera eliminatoria, la cantidad de maneras en las que se pueden ubicar a 5 corredoras (pues, de las 8 corredoras en la eliminatoria, 3 son peruanas) de las 29 disponibles (a las 32 se resta las 3 peruanas) está dada por la combinatoria de 29 en 5.
++ La cantidad de maneras posibles en las que se pueden conformar las carreras eliminatorias, de grupos de 8, con las 32 corredoras está dada por la combinatoria de 32 en 8.
+
+$$\frac{\binom{4}{1} \binom{29}{5} }{ \binom{32}{8}} $$
+```{r}
+r(choose(4,1)*choose(29,5)/choose(32,8))
+```
+
+::::
+
+>> ## **Pregunta 6.2.**
+
+¿Cuál es la probabilidad de que todas las estadounidenses queden en la misma carrera eliminatoria?
+
+::::{.respuesta}
+
+Para calcular esta probabilidad, es necesario hallar:
+
++ La cantidad de maneras posibles de que 7 estadounidenses estén una misma carrera eliminatoria está determinada por la multiplicación de:
+  + La cantidad de maneras en las que se puede ubicar en una de las 4 eliminatorias está dada por la combinatoria de 4 en 1. 
+  + Dentro de la carrera eliminatoria, la cantidad de maneras en las que se pueden ubicar a 1 corredora (pues, de las 8 corredoras en la eliminatoria, 7 son estadounidenses) de las 25 disponibles (a las 32 se resta las 7 estadounidenses) está dada por la combinatoria de 25 en 1.
++ La cantidad de maneras posibles en las que se pueden conformar las carreras eliminatorias, de grupos de 8, con las 32 corredoras está dada por la combinatoria de 32 en 8.
+
+$$\frac{\binom{4}{1} \binom{25}{1} }{ \binom{32}{8}} $$
+```{r}
+r(choose(4,1)*choose(25,1)/choose(32,8))
+```
+
+::::
+
+>> ## **Pregunta 6.3.**
+
+¿Cuál es la probabilidad de que todas las guatemaltecas queden en la misma carrera eliminatoria?
+
+::::{.respuesta}
+
+Para calcular esta probabilidad, es necesario hallar:
+
++ La cantidad de maneras posibles de que la única guatemalteca esté una misma carrera eliminatoria está determinada por la multiplicación de:
+  + La cantidad de maneras en las que se puede ubicar en una de las 4 eliminatorias está dada por la combinatoria de 4 en 1. 
+  + Dentro de la carrera eliminatoria, la cantidad de maneras en las que se pueden ubicar a 7 corredoras (pues, de las 8 corredoras en la eliminatoria, 1 es guatemalteca) de las 31 disponibles (a las 32 se resta la única guatemalteca) está dada por la combinatoria de 31 en 7.
++ La cantidad de maneras posibles en las que se pueden conformar las carreras eliminatorias, de grupos de 8, con las 32 corredoras está dada por la combinatoria de 32 en 8.
+
+$$\frac{\binom{4}{1} \binom{31}{7} }{ \binom{32}{8}} $$
+```{r}
+r(choose(4,1)*choose(31,7)/choose(32,8))
+```
+
+::::
+
+> # **Pregunta 7**
+
+>> ## **Pregunta 7.1.**
+
+Dado que todas las peruanas están en la misma carrera eliminatoria,
+
+¿Cuál es la probabilidad de que dos peruanas participen en la final?
+
+::::{.respuesta}
+
+Para calcular esta probabilidad, es necesario hallar:
+
++ La cantidad de maneras posibles de que 2 peruanas participen en la final, en una carrera en la que las 3 peruanas participan, está determinada por la combinatoria de 3 en 2.
++ La cantidad de maneras posibles en las que 2 corredoras participen en la final, dado que en la carrera eliminatoria participan 8 corredoras,está dada por la combinatoria de 8 en 2.
+
+$$\frac{\binom{3}{2} }{ \binom{8}{2}} $$
+
+```{r}
+r(choose(3,2)/choose(8,2))
+```
+
+::::
+
+>> ## **Pregunta 7.2.**
+
+Dado que todas las estadounidenses están en la misma carrera eliminatoria,
+
+¿Cuál es la probabilidad de que dos estadounidenses participen en la final?
+
+::::{.respuesta}
+
+Para calcular esta probabilidad, es necesario hallar:
+
++ La cantidad de maneras posibles de que 2 estadounidenses participen en la final, en una carrera en la que las 7 estadounidenses participan, está determinada por la combinatoria de 7 en 2.
++ La cantidad de maneras posibles en las que 2 corredoras participen en la final, dado que en la carrera eliminatoria participan 8 corredoras,está dada por la combinatoria de 8 en 2.
+
+$$\frac{\binom{7}{2} }{ \binom{8}{2}} $$
+
+```{r}
+r(choose(7,2)/choose(8,2))
+```
+
+::::
+
+>> ## **Pregunta 7.3.**
+
+Dado que todas las trinitarias están en la misma carrera eliminatoria
+
+¿Cuál es la probabilidad de que dos trinitarias participen en la final?
+
+::::{.respuesta}
+
+Para calcular esta probabilidad, es necesario hallar:
+
++ La cantidad de maneras posibles de que 2 trinitarias participen en la final, en una carrera en la que las 2 trinitarias participan, está determinada por la combinatoria de 2 en 2.
++ La cantidad de maneras posibles en las que 2 corredoras participen en la final, dado que en la carrera eliminatoria participan 8 corredoras,está dada por la combinatoria de 8 en 2.
+
+$$\frac{\binom{2}{2} }{ \binom{8}{2}} $$
+```{r}
+r(choose(2,2)/choose(8,2))
+```
+
+::::
+
+>> ## **Pregunta 7.4.**
+
+Dado que todas las guatemaltecas están en la misma carrera eliminatoria
+
+¿Cuál es la probabilidad de que dos guatemaltecas participen en la final?
+
+::::{.respuesta}
+
+Para calcular esta probabilidad, es necesario hallar:
+
++ La cantidad de maneras posibles de que 2 guatemaltecas participen en la final, en una carrera en la que la única guatemalteca participa, está determinada por la combinatoria de 1 en 2 (la cual es 0).
++ La cantidad de maneras posibles en las que 2 corredoras participen en la final, dado que en la carrera eliminatoria participan 8 corredoras,está dada por la combinatoria de 8 en 2.
+
+$$\frac{\binom{1}{2} }{ \binom{8}{2}} $$
+```{r}
+r(choose(1,2)/choose(8,2))
+```
+
+::::
+
+

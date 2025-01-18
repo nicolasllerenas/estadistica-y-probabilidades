@@ -1,0 +1,130 @@
+---
+title: "examenfinal"
+format: html
+editor: visual
+---
+
+
+```{r}
+DF <- read.csv("CuyA.csv")
+
+A <- sum(DF$Raza == "híbrido")/nrow(DF)
+A
+
+B <- sum(DF$Raza == "abisinio")/nrow(DF)
+B
+
+C <- sum(DF$Raza == "abisinio" | DF$Raza != "peruano")/nrow(DF)
+C
+
+D <- sum(DF$Raza != "peruano" & DF$Raza != "andino")/nrow(DF)
+D
+
+AB <- sum(DF$Raza == "híbrido" | DF$Raza == "abisinio")/nrow(DF)
+AB
+
+AC <- sum(DF$Raza == "híbrido" | DF$Raza == "abisinio" | DF$Raza != "peruano")/nrow(DF)
+AC
+
+DC <- sum(DF$Raza != "peruano" & DF$Raza != "andino" & ( DF$Raza == "abisinio" | DF$Raza != "peruano"))/sum(DF$Raza == "abisinio" | DF$Raza != "peruano")
+
+DC
+```
+```{r}
+G <- sum(DF$Color == 'marrón' | DF$Color == 'tricolor' | DF$Color == 'pintado')/nrow(DF)
+H <- sum(DF$Color == 'negro' | DF$Color == 'tricolor')/nrow(DF)
+K <- sum(DF$Color == 'blanco' | DF$Color == 'tricolor' | DF$Color == 'pintado')/nrow(DF)
+L <- sum(DF$Color == 'tricolor' | DF$Color == 'pintado')/nrow(DF)
+G
+HL <- sum((DF$Color == 'negro' | DF$Color == 'tricolor') | (DF$Color == 'tricolor' | DF$Color == 'pintado'))/nrow(DF)
+HL
+1-L
+G_union_K_interseccion_Todo_no_H <- sum(((DF$Color == 'marrón' | DF$Color == 'tricolor' | DF$Color == 'pintado') | (DF$Color == 'blanco' | DF$Color == 'tricolor' | DF$Color == 'pintado')) &  (DF$Color != 'negro' & DF$Color != 'tricolor'))/nrow(DF)
+G_union_K_interseccion_Todo_no_H
+
+L_dado_que_G_union_H_union_K <- sum(((DF$Color == 'marrón' | DF$Color == 'tricolor' | DF$Color == 'pintado') | (DF$Color == 'negro' | DF$Color == 'tricolor') | (DF$Color == 'blanco' | DF$Color == 'tricolor' | DF$Color == 'pintado')) & (DF$Color == 'tricolor' | DF$Color == 'pintado'))/sum((DF$Color == 'marrón' | DF$Color == 'tricolor' | DF$Color == 'pintado') | (DF$Color == 'negro' | DF$Color == 'tricolor') | (DF$Color == 'blanco' | DF$Color == 'tricolor' | DF$Color == 'pintado'))
+L_dado_que_G_union_H_union_K
+```
+
+```{r}
+peruano <- sum(DF$Raza == "peruano")/nrow(DF)
+peruano
+
+dnbinom(x, size = 6, prob =peruano)
+
+6*(1-peruano)/(peruano*peruano)
+6 / peruano
+```
+
+```{r}
+peruano_dado_que_es_blanco <- sum(DF$Color == "blanco" & DF$Raza == "peruano")/sum(DF$Color == "blanco")
+
+peruano_dado_que_es_blanco
+
+dnbinom(x, size = 6, prob =peruano_dado_que_es_blanco)
+
+6*(1-peruano_dado_que_es_blanco)/(peruano_dado_que_es_blanco*peruano_dado_que_es_blanco)
+
+6 / peruano_dado_que_es_blanco
+
+```
+
+```{r}
+hist(DF$Tiempo, breaks = 40)
+media_tiempo <- mean(DF$Tiempo, na.rm = TRUE)
+media_tiempo*0.9*nrow(DF)
+parametro <- 1/media_tiempo
+parametro
+```
+```{r}
+pexp(q=3, rate = parametro, lower.tail = FALSE)
+1 - pexp(q=3, rate = parametro)
+qexp(p=0.9, rate = parametro)
+```
+
+```{r}
+x <- seq(from=0, to=8755, by=1)
+fx <-pexp(x, rate = parametro)
+plot(x,fx)
+```
+
+
+
+```{r}
+DF$Peso <- ifelse(is.na(DF$Peso), mean(DF$Peso, na.rm = TRUE), DF$Peso)
+hist(DF$Peso, breaks = 40)
+mean(DF$Peso, na.rm = TRUE)
+sd(DF$Peso, na.rm = TRUE)
+cuy_peruano_hembra_peso_mas_1k <- sum(DF$Raza == "peruano" & DF$Sexo == "hembra" & (DF$Peso > 1000))/sum(nrow(DF))
+cuy_peruano_hembra_peso_mas_1k
+```
+
+```{r}
+
+DF$Talla <- addNA(DF$Talla)
+op <- par(mfrow = c(2,2))
+par(mar = c(2.5,4,1,0.5))
+colores <- c(rep("gray", 4), "magenta")
+boxplot(DF$Largo ~ DF$Talla, varwidth = TRUE
+        , cex.axis = 0.8, xlab = "Talla"
+        , ylab = "largo (cm)", col = colores
+        )
+boxplot(DF$Cintura ~ DF$Talla, varwidth = TRUE
+        , cex.axis = 0.8, xlab = "Talla"
+        , ylab = "cintura (cm)", col = colores
+        )
+boxplot(DF$Peso ~ DF$Talla, varwidth = TRUE
+        , cex.axis = 0.8, xlab = "Talla"
+        , ylab = "peso (g)", col = colores
+        )
+barplot(table(DF$Talla, useNA = "ifany"), cex.axis = 0.8
+        , xlab = "Talla", ylab = "cantidad"
+        , col = colores, cex.names = 0.8
+        )
+par(op)
+
+sum(is.na(DF$Talla))
+
+table(DF$Talla, useNA = "ifany")
+
+```

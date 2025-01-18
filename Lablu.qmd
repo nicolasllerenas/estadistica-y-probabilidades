@@ -1,0 +1,93 @@
+---
+title: "Final"
+format: html
+editor: visual
+---
+
+```{r}
+library(ggplot2)
+library(readr)
+library(kableExtra)
+library(dplyr)
+library(vcd)
+library(knitr)
+library(stringr)
+DF = read_csv("L2A.csv")
+DF
+```
+
+```{r}
+m <- str_split_fixed(DF$Presion, "/", 2)
+DF$Sisto <- as.numeric(m[, 1])
+DF$Diasto <- as.numeric(m[, 2])
+DFsinna <- na.omit(DF)
+DF
+```
+
+```{r}
+length(unique(DF$Id))
+sum(!complete.cases(DF))
+nrow(DF[DF$Tipo == "Máquina",]) / nrow(DF)
+```
+
+```{r}
+Tecnicos = DF[DF$Tipo == "Técnico",]
+sum(apply(Tecnicos, 1, function(x) any(is.na(x)))) / sum(apply(DF, 1, function(x) any(is.na(x))))
+Maquinas = DF[DF$Tipo == "Máquina",]
+sum(apply(Maquinas, 1, function(x) any(!is.na(x)))) / nrow(Maquinas)
+331 / 1188
+```
+
+```{r}
+hist(DFsinna$Temperatura)
+boxplot(DFsinna$Temperatura)
+nrow(DF)-nrow(na.omit(DF))
+temp39 = nrow(DFsinna[DFsinna$Temperatura == 39,]) / nrow(DFsinna)
+
+```
+
+```{r}
+hist(DF$IMC)
+M = DFsinna[DFsinna$Sexo == "M",]
+F = DFsinna[DFsinna$Sexo == "F",]
+hist(M$IMC)
+hist(F$IMC)
+```
+
+```{r}
+nrow(DFsinna[DFsinna$Sisto >= 140 | DFsinna$Diasto >= 90,]) / nrow(DFsinna)
+hipers = DFsinna[DFsinna$Sisto >= 140 | DFsinna$Diasto >= 90,]
+length(unique(hipers$Id)) / length(unique(DFsinna$Id))
+```
+
+```{r}
+C <- c(rgb(0, 1, 1, 0.2)
+, rgb(0, 1, 1, 0.2)
+, rgb(0, 1, 1, 0.2)
+, rgb(1, 1, 0, 0.2)
+, rgb(1, 0.5, 0, 0.6)
+, rgb(1, 0, 0, 1)
+)
+op <- par(bty = "n")
+boxplot(DFP$Ed ~ DFP$Act:DFP$Seg
+, varwidth = TRUE
+, lex.order = FALSE
+, col = C
+, xlab = "nivel de actividad vs seguimiento"
+, ylab = "edad (años)"
+, cex.axis = 0.6
+, names = c("Baja", "Media", "Alta", "Baja", "Media", "Alta")
+, main = "Edad vs. nivel de actividad de los pacientes"
+)
+legend("topleft"
+, legend = c("sin seguimiento"
+, "con seguimiento por hipertensión ocasional"
+, "con seguimiento por hipertensión regular"
+, "con seguimiento por hipertensión estricto")
+, fill = c(C[1], C[4], C[5], C[6])
+, cex = 0.6
+, bty = "n"
+)
+abline(h = 100, lty = 3)
+par(op)
+```

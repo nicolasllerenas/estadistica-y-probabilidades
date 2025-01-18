@@ -1,0 +1,744 @@
+---
+title: "Laboratorio 2"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: no
+      smooth_scroll: no
+    number_sections: true
+    theme: yeti
+---
+
+<style type="text/css">
+#TOC {
+      color: gray; 
+      }
+.respuesta {color: #211A23;
+            background:#EDF7FF;
+            border-color:#7C9DBF;
+            border-left: 5px solid #7C9DBF;
+            padding: 0.5em;
+            margin-bottom: 10px}
+
+.nota {color: #211A23;
+            background:#e6ffe6;
+            border-color:#009999;
+            border-left: 5px solid #339966;
+            padding: 0.5em;
+            margin-bottom: 10px}
+
+th,td{
+     padding:2px 5px 2px 5px;
+  }
+</style>
+
+> # **Tipos sanguíneos**
+
+La tabla a continuación denota las distintas frecuencias aproximadas en la población peruana de los diversos tipos sanguíneos más comunes. 
+
+```{r warning=FALSE}
+library(xtable)
+library(dplyr)
+```
+
+```{r}
+Sangre<-as_tibble(list(
+  Tipo=c("A+","B+","AB+","O+","A-","B-","AB-","O-")
+  ,Frecuencia=c(18.4,7.8,1.6,70.0,0.5,0.28,0.02,1.4)
+  )
+)
+```
+
+```{r,results="asis"}
+print(xtable(Sangre), type="html",include.rownames=FALSE)
+```
+
+Fuente: [Club rh negativo de Perú](http://rhnegativoperu.com/donaciones-de-sangre/porcentajes-grupo-sanguineo/).
+
+A continuación, se crea una función de redondeo a emplear en todo el examen:
+
+```{r}
+r <- function(x){
+  return(round(x, digits = 2)) 
+  #round( ,2) -> redondea a dos decimales
+}
+```
+
+---
+
+> # **Pregunta 1**
+Determine la probabilidad de cada tipo o factor sanguíneo en Perú.
+
+::::{.respuesta}
+
+Para resolver este ejercicio se debe de tener en cuenta que la probabilidad se obtiene de la división entre la frecuencia de cada tipo de sangre y la suma de esas frecuencias.  
+
+$$
+Probabilidad(var)=\frac{Frecuencia_{var}}{Total}
+$$
+
+Primero, se crea la variable `prob` donde almacenamos las probabilidades de cada tipo de sangre.
+
+```{r}
+Sangre$prob <- Sangre$Frecuencia/sum(Sangre$Frecuencia) #Se crea una columna "prob" al dividir La frecuencia de cada tipo de sangre entre la frecuencia acumulada (total de datos)
+```
+
+Luego, se halla: 
+
++ La probabilidad del _$tipo O$_, sumando los dos tipos: $O^{-}$ y $O^+$.
+
+```{r}
+Tipo_O <- sum(Sangre$prob[c(4,8)])
+
+cat('P[Tipo O]=',r(Tipo_O))
+```
+
++ La probabilidad del _tipo A_, sumando los dos tipos: $A^{-}$ y $A^+$.
+
+```{r}
+Tipo_A <- sum(Sangre$prob[c(1,5)])
+
+cat('P[Tipo A]=',r(Tipo_A))
+```
+
++ La probabilidad del _tipo B_, sumando los dos tipos: $B^{-}$ y $B^+$.
+
+```{r}
+Tipo_B <- sum(Sangre$prob[c(2,6)])
+
+cat('P[Tipo B]=',r(Tipo_B))
+```
+
++ La probabilidad del _tipo AB_, sumando los dos tipos: $AB^{-}$ y $AB^+$.
+
+```{r}
+Tipo_AB <- sum(Sangre$prob[c(3,7)])
+
+cat('P[Tipo AB]=',r(Tipo_AB))
+```
+
+Para obtener los factores Rh+ y Rh- se debe de sumar las probabilidades de los tipos "+" y "-" respectivamente. Por lo tanto:
+
++ La probabilidad del _$tipo Rh^{+}$_, sumando los tipos positivos (+).
+
+```{r}
+Factor_RhP <- sum(Sangre$prob[c(1,2,3,4)])
+
+cat('P[Tipo Rh+]=',r(Factor_RhP))
+```
+
++ La probabilidad del _$tipo Rh^{-}$-_, sumando los tipos negativos (-).
+
+```{r}
+Factor_RhN <- sum(Sangre$prob[c(5,6,7,8)])
+
+cat('P[Tipo Rh-]=',r(Factor_RhN))
+```
+
+::::
+
+> # **Pregunta 2**
+
+> ## **Pregunta 2.1**
+En una campaña de donación de sangre se reciben 200 donantes.
+La probabilidad de recibir exactamente 3 donantes de tipo $O^-$, correctamente redondeada a dos decimales, es:
+
+::::{.respuesta}
+
+El ejercicio da un número exacto de éxitos; por lo tanto se entiende que es una distribución binomial cuya función de densidad es: 
+
+$$
+P(X=k)={n \choose k }p^k(1-p)^{n-k}
+$$
+
+Entonces, como $p=P[Tipo~O^-]=0.014$ y $n=200$ se tiene que:
+
+$$
+P(X_{O^-}=k)={200 \choose k }(0.014)^k(1-0.014)^{200-k}
+$$
+
+Para obtener la respuesta, solo reemplazamos $k=3$.
+
+```{r}
+# Remplazando en la fórmula
+r(choose(200,3)*Sangre$prob[(8)]^3*(1-Sangre$prob[(8)])^(200-3))
+
+# Usando la función dbinom
+r(dbinom(x=3, size=200, prob=Sangre$prob[(8)]))
+
+#dbinom(x=número de éxitos, size=total de donantes, prob=probabilidad de obtener O-)
+```
+
+::::
+
+::::{.nota}
+
+**NOTA: Aclaración sobre la función dbinom y pbinom**
+
+Dada la función de densidad:
+
+$$
+P(\mathbb{X}=k)={n \choose k }p^k(1-p)^{n-k}
+$$
+
+La función `dbinom` calcula la probabilidad de tener _k_ éxitos en _n_ experimentos bernoulli independientes, cuya probabilidad de éxito es _p_. 
+
+$$
+dbinom(x=k,~size=n,~prob=p)
+$$
+
+Si regresamos al ejemplo, tenemos: $k=3$, $n=200$ y $p=P[Tipo~O^-]=0.014$.  
+
+**Recordatorio:** La probabilidad $p=P[Tipo~O^-]$ se halla buscando en la columna "prob", en la tabla "Sangre" que creamos. Como corresponde a la observación 8, usamos ese índice para obtener su valor:
+
+![Índice](indicevalores.png)
+
+Como se puede observar, la cantidad de éxitos (número personas que tienen tipo de sangre $O^-$) puede ir desde 0 hasta n. En nuestro ejemplo, podríamos calcular la probabilidad que cero personas, de los 200 donantes, tengan sangre tipo $O^-$ (éxito), así también la probabilidad de que solo 1 persona, de los 200, tenga el tipo de sangre $O^-$, y así sucesivamente hasta 200. La última probabilidad que podríamos calcular es la de 200; es decir, que 200 de las 200 personas que llegaron como donantes, tengan efectivamente el tipo de sangre $O^-$.
+
+Cada una de las probabilidades, de 0 hasta 200 éxitos, podríamos calcularlas reemplazando en la fórmula de la función de densidad, pero `R` nos brinda la función `dbinom` que calcula esta probabilidad puntual sin necesidad de expresarla en una fórmula.
+
+A continuación se presenta gráficamente cada una de las probabilidades para cada número de éxitos (número de personas con tipo de sangre $O^-$ de los 200 donantes):
+
+```{r}
+plot(0:200,dbinom(x=0:200, size=200, prob=Sangre$prob[(8)]),type = "h", xlab="Número de donantes con tipo de sangre O-", ylab="Probabilidad", main="Probabilidad de la variable 'Número de donantes de sangre tipo O-'",cex.main=0.9)
+```
+
+Cada una de estas probabilidades se puede almacenar en un objeto en `R` y acceder mediante el índice.
+
+```{r}
+# almacenamos las probabilidades anteriores en el objeto "prob_donantes"
+prob_donantes<-dbinom(x=0:200, size=200, prob=Sangre$prob[(8)])
+```
+
+Como almacenamos la probabilidad de "0" éxitos a "200", entonces el primer valor del objeto corresponderá a la probabilidad de "0" éxitos, el segundo valor a la probabilidad de "1" éxito y así sucesivamente. Por ejemplo, si quisiéramos acceder a la probabilidad de "3" éxitos, tendríamos que pedir el cuarto valor.
+
+```{r}
+# Hallando la probabilidad de obtener 3 donantes de sangre tipo O- en los 200 
+r(prob_donantes[4])
+```
+
+**¿Cómo calcularíamos la probabilidad de que al menos 6 donantes sean de sangre tipo $O^-$?**
+
+Esto significa que se nos pide:
+
+$$
+P[\mathbb{X}\geq 6]=P[\mathbb{X}=6]+P[\mathbb{X}=7]+...+P[\mathbb{X}=200]
+$$
+
+Como la sumatoria de todas las probabilidades es 1,
+
+$$
+\sum_{k=0}^{200}P[\mathbb{X}=k]=1\\
+\sum_{k=0}^{5}P[\mathbb{X}=k]+\sum_{k=6}^{200}P[\mathbb{X}=k]=1\\
+\sum_{k=6}^{200}P[\mathbb{X}=k]=1-\sum_{k=0}^{5}P[\mathbb{X}=k]
+$$
+
+Entonces, se tiene que:
+
+$$
+P[\mathbb{X}\geq 6]=1-P[\mathbb{X}<6]=1-P[\mathbb{X}\leq 5]
+$$
+
+Como todas las probabilidades las habíamos almacenado en el objeto *'prob_donantes'*, solo tendríamos que acceder a las probabilidades que corresponden a k=6, 7, 8, ..., 200. Como el primer valor de este vector corresponde a k=0, entonces accedemos a los índices desde 7 hasta 201 para obtener los valores de k=6, 7, ..., 200. Lo siguiente, para obtener $P[\mathbb{X}\geq 6]$, sería solo sumar todos estos valores:
+
+```{r}
+sum(prob_donantes[7:201])
+```
+
+Gráficamente estamos sumando todos las barras de color rojo $P[\mathbb{X}\geq 10]=P[\mathbb{X} > 9]$, que son muy pequeñas. Las barras azules corresponden a $P[\mathbb{X} < 10]=P[\mathbb{X}\leq 9]$.
+
+```{r}
+colores <- c(rep("blue",6), rep("red",195))
+plot(0:200,prob_donantes,type = "h", xlab="Número de donantes con tipo de sangre O-", ylab="Probabilidad", main="Probabilidad de la variable 'Número de donantes de sangre tipo O-'",cex.main=0.9,col=colores)
+```
+
+`R` provee una función que devuelve la suma acumulada tanto de las barras azules o rojas. Veamos.
+
+$\color{green}{\spadesuit}$ Si nos piden calcular $P[\mathbb{X}< 6]=P[\mathbb{X}\leq 5]$, es decir, la suma de todas las barras azules, podemos usar la función `pbinom`.
+
+```{r}
+pbinom(q=5, size = 200, prob = Sangre$prob[(8)])
+
+# pbinom: devuelve la probabilidad acumulada hasta el valor "q" (size=n, prob=p)
+```
+
+Si usamos el vector que creamos, donde almacenamos las probabilidades, tendríamos que sumar los 6 primeros valores que corresponden a las probabilidades de $k=0$ hasta $k=5$. Al final obtenemos el mismo valor.
+
+```{r}
+sum(prob_donantes[1:6])
+```
+
+En la función `pbinom` si no se especifica el valor del parámetro `lower.tail`, se asigna por defecto `TRUE`. Este parámetro, en `TRUE`, suma las probabilidades a la izquierda, es decir, las barras azules. Esto quiere decir que se calcula $P[\mathbb{X}\leq5]=P[\mathbb{X}<6]$, que es lo calculado anteriormente con $\color{green}{\text{pbinom(q=5, size = 200, prob = Sangre\$prob[(8)])}}$. Fijarse que se fija el número 5 porque se incluye en la suma.
+
+$\color{green}{\spadesuit}$ Si nos piden calcular $P[\mathbb{X}\geq 6]=P[\mathbb{X}> 5]$, es decir, la suma de todas las barras rojas, podemos uar la función `pbinom`, fijando el valor del parámetro `lower.tail` como `FALSE`. 
+
+```{r}
+pbinom(q=5, size = 200, prob = Sangre$prob[(8)], lower.tail = FALSE)
+```
+
+Si usamos el vector que creamos, donde almacenamos las probabilidades, tendríamos que sumar los valores de que van del índice 7 hasta el índice 201, que corresponden a las probabilidades de $k=6$ hasta $k=200$. Al final obtenemos el mismo valor.
+
+```{r}
+sum(prob_donantes[7:201])
+```
+
+Por último, es fácil darse cuenta de que esta probabilidad $P[\mathbb{X}\geq 6]=1-P[\mathbb{X}\leq 5]$, es equivalente a:
+
+```{r}
+1-pbinom(q=5, size = 200, prob = Sangre$prob[(8)])
+```
+
+::::
+
+***De forma similar se hallan para los tipo $A^-$, $B^-$, y $AB^-$***
+
+> ## **Pregunta 2.2**
+En una campaña de donación de sangre se reciben 200 donantes.
+La probabilidad de recibir exactamente 3 donantes de tipo $A^-$, correctamente redondeada a dos decimales, es:
+
+::::{.respuesta}
+
+La función de densidad, dado $p=P[Tipo~A^-]=0.005$ y $n=200$, es:
+
+$$
+P(X=k)={200 \choose k }(0.005)^k(1-0.005)^{200-k}
+$$
+
+```{r}
+r(dbinom(x=3, size=200, prob=Sangre$prob[(5)]))
+```
+
+::::
+
+> ## **Pregunta 2.3**
+En una campaña de donación de sangre se reciben 200 donantes.
+La probabilidad de recibir exactamente 3 donantes de tipo $B^-$, correctamente redondeada a dos decimales, es:
+
+::::{.respuesta}
+
+La función de densidad, dado $p=P[Tipo~B^-]=0.0028$ y $n=200$, es:
+
+$$
+P(X=k)={200 \choose k }(0.0028)^k(1-0.0028)^{200-k}
+$$
+
+```{r}
+r(dbinom(x=3, size=200, prob=Sangre$prob[(6)]))
+```
+
+::::
+
+> ## **Pregunta 2.4**
+En una campaña de donación de sangre se reciben 200 donantes.
+La probabilidad de recibir exactamente 1 donante de tipo $AB^-$, correctamente redondeada a dos decimales, es:
+
+::::{.respuesta}
+
+La función de densidad, dado $p=P[Tipo~AB^-]=0.0002$ y $n=200$, es:
+
+$$
+P(X=k)={200 \choose k }(0.0002)^k(1-0.0002)^{200-k}
+$$
+
+```{r}
+r(dbinom(x=1, size=200, prob=Sangre$prob[(7)]))
+```
+
+::::
+
+---
+
+> # **Pregunta 3**
+
+> ## **Pregunta 3.1**
+En una campaña de donación de sangre se reciben 200 donantes.
+El valor esperado del número de donantes $O^-$, correctamente redondeado a dos decimales, es:
+
+::::{.respuesta}
+
+Como se está trabajando con una distribución binomial, la esperanza (Valor esperado) se calcularía así:
+
+**$$E(X)=np$$** 
+
+Donde n = número de ensayos y, p=probabilidad de donantes $O^-$
+
+```{r}
+r(200*Sangre$prob[(8)])
+#n=200
+#p=Sangre$prob[(8)]
+```
+
+::::
+
+***De forma similar se hallan para los tipo $A^-$, $B^-$, y $AB^-$***
+
+> ## **Pregunta 3.2**
+En una campaña de donación de sangre se reciben 200 donantes.
+El valor esperado del número de donantes $A^-$, correctamente redondeado a dos decimales, con $n=200$ $p=P[Tipo~A^-]=0.005$, es:
+
+::::{.respuesta}
+
+```{r}
+r(200*Sangre$prob[(5)])
+```
+
+::::
+
+> ## **Pregunta 3.3**
+En una campaña de donación de sangre se reciben 200 donantes.
+El valor esperado del número de donantes $B^-$, correctamente redondeado a dos decimales, con $n=200$ $p=P[Tipo~B^-]=0.0028$, es:
+
+::::{.respuesta}
+
+```{r}
+r(200*Sangre$prob[(6)])
+```
+
+::::
+
+> ## **Pregunta 3.4**
+En una campaña de donación de sangre se reciben 200 donantes.
+El valor esperado del número de donantes $AB^-$, correctamente redondeado a dos decimales, con $n=200$ $p=P[Tipo~AB^-]=0.0002$, es:
+
+::::{.respuesta}
+
+```{r}
+r(200*Sangre$prob[(7)])
+```
+
+::::
+
+---
+
+> # **Pregunta 4**
+  
+> ## **Pregunta 4.1**
+En una campaña de donación de sangre se reciben 200 donantes.
+La variable aleatoria que cuenta número de donantes que es necesario atender hasta atender el primero diferente de O+ es una [VA] con parámetros [n] y [prob].
+
+::::{.respuesta}
+
+Hay que recordar que la geométrica es un caso particular de la binomial negativa. Sabemos que la binomial negativa cuenta el número de intentos hasta el n-ésimo éxito, y si n=1 entonces obtenemos la geométrica.
+
+En este caso, un éxito es atender a alguien distinto de $O^+$
+
+La respuesta a esta pregunta es $\mathbb{X_{41}}\sim\text{BinNeg}(1,1-q)$.
+
+Función de densidad:
+
+$$
+\begin{aligned}
+\text{Sea}~~~q&=1-P(Tipo~O^+)\\
+P(\mathbb{X_{41}}=x)&=(1-q)^{x-1}q
+\end{aligned}
+$$
+
+```{r}
+#-->Binomial negativa, n=1, p=1-Sangre$prob[(4)]
+
+# Ejemplo, si buscáramos obtener la probabilidad de seleccionar a alguien con un tipo de sangre distinto de O+, al sexto intento:
+Sangre$prob[(4)]^(6-1)*(1-Sangre$prob[(4)])
+dnbinom(x = 5,size = 1 ,p=1-Sangre$prob[(4)])
+
+dgeom(x = 5,prob = 1-Sangre$prob[(4)])
+```
+
+::::
+  
+***De forma similar se hallan para los tipo A, B-, y AB-***
+  
+> ## **Pregunta 4.2**
+En una campaña de donación de sangre se reciben 200 donantes.
+La variable aleatoria que cuenta número de donantes que es necesario atender hasta atender el primero diferente de A+ es una [VA] con parámetros [n] y [prob].
+
+::::{.respuesta}
+
+En este caso, un éxito es atender a alguien distinto de $A^+$.
+
+La respuesta a esta pregunta es $\mathbb{X_{42}}\sim\text{BinNeg}(1,1-q)$.
+
+Función de densidad:
+
+$$
+\begin{aligned}
+\text{Sea}~~~q&=1-P(Tipo~A^+)\\
+P(\mathbb{X_{42}}=x)&=(1-q)^{x-1}q
+\end{aligned}
+$$
+
+```{r}
+#-->Binomial negativa, n=1, p=1-Sangre$prob[(1)]
+
+# Calcular la probabilidad de que al sexto intento se obtenga el primer paciente con un tipo de sangre diferente de A+.
+Sangre$prob[(1)]^(6-1)*(1-Sangre$prob[(1)])
+dnbinom(x = 5,size = 1 ,p=1-Sangre$prob[(1)])
+```
+
+::::
+
+> ## **Pregunta 4.3**
+  En una campaña de donación de sangre se reciben 200 donantes.
+La variable aleatoria que cuenta número de donantes que es necesario atender hasta atender el primero diferente de AB+ es una [VA] con parámetros [n] y [prob].
+
+::::{.respuesta}
+
+En este caso, un éxito es atender a alguien distinto de $AB^+$.
+
+La respuesta a esta pregunta es $\mathbb{X_{43}}\sim\text{BinNeg}(1,1-q)$.
+
+Función de densidad:
+
+$$
+\begin{aligned}
+\text{Sea}~~~q&=1-P(Tipo~AB^+)\\
+P(\mathbb{X_{43}}=x)&=(1-q)^{x-1}q
+\end{aligned}
+$$
+
+```{r}
+#-->Binomial negativa, n=1, p=1-Sangre$prob[(3)]
+
+# Calcular la probabilidad de que al sexto intento se obtenga el primer paciente con un tipo de sangre diferente de A+.
+Sangre$prob[(3)]^(6-1)*(1-Sangre$prob[(3)])
+dnbinom(x = 5,size = 1 ,p=1-Sangre$prob[(3)])
+```
+
+::::
+
+> ## **Pregunta 4.4**
+  En una campaña de donación de sangre se reciben 200 donantes.
+La variable aleatoria que cuenta número de donantes que es necesario atender hasta atender el primero diferente de B+ es una [VA] con parámetros [n] y [prob].
+
+::::{.respuesta}
+
+En este caso, un éxito es atender a alguien distinto de $B^+$.
+
+La respuesta a esta pregunta es $\mathbb{X_{44}}\sim\text{BinNeg}(1,1-q)$.
+
+Función de densidad:
+
+$$
+\begin{aligned}
+\text{Sea}~~~q&=1-P(Tipo~B^+)\\
+P(\mathbb{X_{44}}=x)&=(1-q)^{x-1}q
+\end{aligned}
+$$
+
+```{r}
+#-->Binomial negativa, n=1, prob=1-Sangre$prob[(2)]
+
+# Calcular la probabilidad de que al sexto intento se obtenga el primer paciente con un tipo de sangre diferente de A+.
+Sangre$prob[(2)]^(6-1)*(1-Sangre$prob[(2)])
+dnbinom(x = 5,size = 1 ,p=1-Sangre$prob[(2)])
+```
+
+::::
+
+---
+  
+> # **Pregunta 5**
+
+> ## **Pregunta 5.1**
+En una campaña de donación de sangre se reciben 200 donantes.
+El número esperado de donantes hasta ver el primero con tipo O-, correctamente redondeado a 2 decimales, es:
+
+::::{.respuesta}
+
+Se pide hallar la esperanza de obtener "el primero con tipo O-", lo cual nos indica una distribución geométrica, cuya esperanza es: $E(X)=\frac{1}{p}$, donde p = probabilidad de obtener un donante tipo O-.
+
+```{r}
+r(1/(Sangre$prob[(8)]))
+#Sangre$prob[(8)] --> Probabilidad de obtener un donante tipo O-
+```
+
+::::
+
+***De forma similar se hallan para los tipo A, B-, y AB-***
+  
+> ## **Pregunta 5.2**
+En una campaña de donación de sangre se reciben 200 donantes.
+El número esperado de donantes hasta ver el primero con tipo A-, correctamente redondeado a 2 decimales, es:
+
+::::{.respuesta}
+
+```{r}
+r(1/(Sangre$prob[(5)]))
+```
+
+::::
+
+> ## **Pregunta 5.3**
+En una campaña de donación de sangre se reciben 200 donantes.
+El número esperado de donantes hasta ver el primero con tipo B-, correctamente redondeado a 2 decimales, es:
+
+::::{.respuesta}
+
+```{r}
+r(1/(Sangre$prob[(6)]))
+```
+
+::::
+
+> ## **Pregunta 5.4**
+En una campaña de donación de sangre se reciben 200 donantes.
+El número esperado de donantes hasta ver el primero con tipo AB-, correctamente redondeado a 2 decimales, es:
+
+::::{.respuesta}
+
+```{r}
+r(1/(Sangre$prob[(7)]))
+```
+
+::::
+
+---
+
+> # **Pregunta 6**
+El tipo de sangre [Tipo1] es poco frecuente en Perú; aún así esperamos ver al menos un donante en el caso de una campaña con 200 donantes.
+El tipo [Tipo2] es más problemático ya que una campaña de 200 donantes, solo obtendrá algún donante cerca del 43 % de las veces; en una campaña de ese tamaño se esperan ver cerca de [nbn] donantes.
+
+::::{.respuesta}
+
+Se empleará la distribución binomial. Al menos 1 donante se traduce en $P(X>=1)=1-P(x<=0)$, luego se irán obteniendo los valores esperados para cada caso. Para [Tipo1] se observa que valor esperado es cercano a 1 y para [Tipo2] se observa cual P(X>=1)  es el mas cercano a 0.43. 
+
+Posteriormente se pide hallar la esperanza, la cual se calcula al operar n*p
+
+```{r}
+
+cat('Tipo A-\n')
+pbinom(q=0, size=200, prob=Sangre$prob[(5)], lower.tail = FALSE)
+200*Sangre$prob[(5)]
+cat('Tipo B-\n')
+pbinom(q=0, size=200, prob=Sangre$prob[(6)], lower.tail = FALSE)
+200*Sangre$prob[(6)]
+cat('Tipo AB-\n')
+pbinom(q=0, size=200, prob=Sangre$prob[(7)], lower.tail = FALSE)
+200*Sangre$prob[(7)]
+cat('Tipo O-\n')
+pbinom(q=0, size=200, prob=Sangre$prob[(8)], lower.tail = FALSE)
+200*Sangre$prob[(8)]
+
+#[Tipo1]: Sangre poco frecuente y valor esperado de al menos 1 --> A-
+#{Tipo2]: Sangre que obtendrá algún donante P(X>=1) = ~0.43  --> B-
+#[nbn]: Valor esperado de [Tipo2] --> 0.56
+```
+
+::::
+
+El tipo [Tipo3] requiere campañas más grandes, ya que *en promedio veríamos el primero* al haber procesado [exp] donantes. Una campaña con 200 donantes, solo tendrá éxito cerca del 4 % de las veces.
+
+::::{.respuesta}
+
+Para determinar el tipo, recordamos que 4% =0.04 por lo que si observamos los resultados anteriores sabremos que el más cercano a 4% es AB-
+Debemos hallar el valor esperado de una geométrica $E(x)=\frac{1}{p}$
+  
+```{r}
+1/Sangre$prob[(7)] # 1 entre la probabilidad de AB-
+```
+
+::::
+
+---
+  
+> # **Pregunta 7**
+En una campaña de donación de sangre se reciben al menos 200 donantes.
+La probabilidad de obtener el tercer donante O- antes de haber procesado 201 donantes es:
+
+::::{.respuesta}
+  
+Un éxito sería obtener un donante O-, nos piden el 3er éxito, por lo tanto se trata de una binomial negativa. 
+
+$x=$Numero de personas que donan hasta obtener el 3er donante O- . Por lo tanto se pide $P(X<201)==P(x<=200)$ .Recordar que p = probabilidad de tener un donante del tipo O-
+  
+```{r}
+r((pnbinom(200-3,size=3,prob=Sangre$prob[(8)])))
+
+#número de fracasos=200-3
+#número de éxitos =3
+#probabilidad de éxito en cada intento= Sangre$prob[(8)]
+```
+
+::::
+
+---
+  
+> # **Pregunta 8**
+En una campaña de donación de sangre se reciben al menos 200 donantes.
+Si sabemos que los diez primeros donantes tienen factor Rh-, la probabilidad de que al menos uno de ellos sea AB- es:
+  
+::::{.respuesta}
+
+De los 10 que son Rh-, piden la probabilidad de que al menos 1 sea AB- P(x>=1)=P(x>0)
+
+```{r}
+pABneg_neg<-Sangre$prob[(7)]/Factor_RhN
+r(pbinom(0,size=10,prob=pABneg_neg,lower.tail = FALSE))
+
+plot(0:10,dbinom(0:10,size = 10,prob = pABneg_neg),type="h")
+prob_x8<-dbinom(0:10,size = 10,prob = pABneg_neg)
+
+barplot(height = prob_x8[order(prob_x8,decreasing=FALSE)],names=c(10:0),col="#69b3a2",horiz=T, las=1, main="Probabilidades de la variable aleatoria X8")
+```
+
+::::
+
+---
+  
+> # **Pregunta 9**
+En una campaña de donación de sangre se reciben 200 donantes.
+Si sabemos que los diez primeros donantes tienen factor Rh-, la probabilidad de que al menos 20 de los 200 tengan factor Rh- es:
+
+::::{.respuesta}
+
+Ya sabemos que 10 son Rh- , entonces ahora tenemos 190 donantes y nos piden la probabilidad de que al menos 10 tengan factor Rh- P(x>=10)=P(x>9)
+
+```{r}
+#rpta=0.01
+r(pbinom(9,size=190,prob=Factor_RhN,lower.tail=FALSE))
+```
+
+::::
+
+---
+  
+> # **Pregunta 10**
+En una campaña de donación de sangre se reciben 200 donantes.
+Si cinco amigos, Ana, Brenda, Carlos, Diego y Elena, deciden ir a donar sangre juntos y se colocan aleatoriamente en colas diferentes, ¿Cuál es la probabilidad de que los atiendan en orden alfabético?
+
+::::{.respuesta}
+  
+```{r}
+r(1/factorial(5))
+
+choose(5,1)*choose(4,1)*choose(3,1)*choose(2,1)*choose(1,1)
+```
+
+::::
+
+> ## **Pregunta 10.1**
+En una campaña de donación de sangre se reciben 200 donantes. Si cinco amigos, Ana, Brenda, Carlos, Diego y Elena, deciden ir a donar sangre juntos y se colocan aleatoriamente en colas diferentes. Sabemos que los amigos no son familia. También sabemos que cuatro de los cinco tiene tipo O y uno tiene tipo B. Ninguno de ellos sabe su factor Rh. Entonces la probabilidad de que todos tengan factos Rh+ es
+
+::::{.respuesta}
+
+```{r}
+# Aprox minuto 34 de la asesoría del profesor Renom
+
+#P(+|O)=70/(70+1.4)
+#P(+|B)=7.8/(7.8+0.28)
+Factor_RhN^1
+
+(70/71.4)^4*(7.8/8.08)
+
+
+```
+
+::::
+
+
+
+
+
+
+

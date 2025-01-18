@@ -1,0 +1,348 @@
+---
+title: "Analizar el perfil socioeconómico y académico de los estudiantes de la Universidad de Ingeniería y Tecnología (UTEC)"
+author: "Grupo 1: Hanks Jean Pierce Vargas Iglesias, Nicolás Alejandro Llerena Silva"
+format: 
+  revealjs: 
+    theme: beige
+    transition: slide
+    slideNumber: true
+    controls: true
+    progress: true
+    center: true
+    width: 1600
+    height: 900
+    embed-resources: true
+---
+
+## Antecedentes
+
+**Relevancia:** Este proyecto explora la relación entre factores económicos e institucionales y el rendimiento académico, resaltando cómo elementos como el transporte público, la zona de residencia y los servicios universitarios pueden influir significativamente en la experiencia educativa de los estudiantes de la UTEC.
+
+**Contexto:** En el contexto de la educación superior en el Perú, es crucial entender cómo las condiciones económicas e institucionales impactan el bienestar y el desempeño académico de los estudiantes, especialmente en instituciones de ingeniería y tecnología como la UTEC.
+
+**Justificación:** Analizar la influencia de estos factores permitirá identificar oportunidades para mejorar el bienestar estudiantil, optimizar los recursos universitarios y diseñar estrategias que potencien el éxito educativo de los estudiantes, contribuyendo al desarrollo integral de la comunidad universitaria.
+
+---
+
+## Objetivos
+
+-   Examinar el impacto del estrés financiero en el bienestar y rendimiento académico.
+
+-   Evaluar la correlación entre la satisfacción con los servicios básicos (comedor, cafetería) y el desempeño estudiantil.
+
+-   Analizar cómo el distrito de residencia y el tiempo de transporte influyen en el rendimiento académico.
+
+-   Determinar si las horas de sueño afectan el promedio académico.
+
+---
+
+## Datos y Limpieza de Datos
+
+-   Datos obtenidos por encuesta alrededor de 500.
+-   Muestreo por conveniencia.
+-   Limpieza de datos con sum(is.na()) y na.omit().
+-   Variables renombradas para mayor comprensión.
+
+---
+
+
+## Variables {.small} 
+
+```{r,echo=FALSE}
+library(rriskDistributions)
+library(readr)
+library(dplyr)
+library(ggplot2)
+DF <- read_csv("data_limpia.csv")
+```
+
+<style>
+table {
+    font-size: 35px;
+}
+</style>
+
+| Variable | Tipo de variable | Parámetros |
+|----------------------|------------------|--------------------------------|
+| **Promedio ponderado** | (Cuantitativa continua) | Promedio de calificaciones en el último ciclo. |
+| **horas de sueño** | (Cuantitativa continua) | Cantidad promedio de horas de sueño por día. |
+| **Tiempo en transporte** | (Cuantitativa continua) | Tiempo promedio (en horas) de transporte diario hacia la universidad. |
+| **Gasto semanal en alimentacion** | (Cuantitativa discreta) | Monto semanal invertido en alimentación |
+| **Nivel de satisfacción comedor** | (Cualitativa ordinal) | Nivel de satisfaccion con el comedor |
+| **Nivel de satisfacción carrera** | (Cualitativa ordinal) | Nivel de satisfaccion con la carrera |
+| **Nivel de ingles** | (Cualitativa ordinal) | Nivel autoevaluado de inglés (Bajo, Básico, Intermedio, Avanzado). |
+| **Creditos acumulados** | (Cuantitativa discreta) | Creditos acumulados hasta la fecha |
+| **Tipo de beca** | (Cualitativa ordina) | Tipo de beca |           
+
+
+---
+
+## Analisis descriptivo {.small}
+
+::: columns
+::: {.column width="50%"}
+-   **Distritos y Creditos acumulados:**
+```{r,echo=FALSE}
+distri_credito <- chisq.test(DF$Distrito,DF$n_creditos_acumulados)
+cat("El p-value es: ", 0.01337)
+```
+
+
+```{r}
+ggplot(DF, aes(x = Distrito, fill = n_creditos_acumulados)) +
+  geom_bar(position = "stack", color = "white") +  
+  labs(
+    x = "Distrito", 
+    y = "Cantidad de Personas", 
+    fill = "Rango de Créditos", 
+    title = "Distribución de Créditos Acumulados por Distrito"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 10), # Mejora la rotación y tamaño del texto
+    axis.title.x = element_text(size = 12, face = "bold"), # Resalta el título del eje X
+    axis.title.y = element_text(size = 12, face = "bold"), # Resalta el título del eje Y
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5), # Centra y resalta el título
+    legend.title = element_text(size = 12, face = "bold"), # Ajusta el título de la leyenda
+    legend.text = element_text(size = 10) # Ajusta el tamaño del texto de la leyenda
+  ) +
+  scale_fill_brewer(palette = "Set3") # Mejora la paleta de colores para que sea más clara y distintiva
+
+
+```
+
+:::
+
+::: {.column width="50%"}
+-   **Promedio y Gasto semanal en alimentacion:**
+```{r,echo=FALSE}
+prom_gast <- cor.test(DF$gastoSemanal_alimentacion,DF$promedio_ponderado,method = "spearman")
+cat("El p-value es: ", 0.006404)
+```
+
+```{r}
+ggplot(DF, aes(x = cut(DF$gastoSemanal_alimentacion, 
+                       breaks = seq(0, 500, by = 100)), 
+               y = DF$promedio_ponderado)) +
+  geom_boxplot(fill = "lightblue") +
+  labs(x = "Rango de Gasto Semanal", y = "Promedio Ponderado", title = "Boxplot de Gasto Semanal vs Promedio Ponderado") +
+  scale_y_continuous(limits = c(0, 20)) +
+  theme_minimal()
+```
+
+:::
+:::
+---
+
+## Probabilidad Empírica
+
+**Probabilidad de que una persona tenga la beca como facilidad de estudio:**
+
+-   Beca como facilidad de estudio (30%) - Sugiere que una proporción significativa de estudiantes tienen una beca.
+
+**Probabilidad de que un estudiante tenga el credito universitario como facilidad de estudio:**
+
+-   Credito Universitario como facilidad de estudio (15%) - Indica que una proporcion un poco baja tiene una pequeña ayuda en los estudios
+
+**Probabilidad de que un estudiante no tenga alguna facilidad de estudio:**
+
+-   Ninguno (55%) - Señala una alta probabilidad de que un estudiante no cuenta con alguna facilidad de estudio.
+
+---
+
+## Probabilidad Condicional: {.small}
+
+**Hallar la probabilidad de seleccionar una persona del estudio cuyo promedio sea mayor a 16 y que sea becado. **
+
+```{r}
+#Total de observaciones
+total <- nrow(DF)
+
+# Cálculo de las probabilidades
+c_A <- sum(DF$promedio_ponderado > 16, na.rm = TRUE)
+P_A <-  c_A / total
+cat("Probabilidad de que escoger a un estudiante que tenga un promedio mayor a 16:", P_A, "\n")
+
+c_B <- sum(DF$facilidad_estudio == "Becado", na.rm = TRUE)
+P_B <- c_B  / total
+
+cat("Probabilidad de que un estudiante sea becado:", P_B, "\n")
+
+# Probabilidad conjunta
+cant_personas <- sum(DF$promedio_ponderado > 16 & DF$facilidad_estudio== "Becado",na.rm = TRUE)
+cat("Cantidad de personas cuyo promedio es mayor a 16 y poseen beca =", cant_personas, "\n")
+cat("\n")
+P_A_n_B = cant_personas / total
+cat("Probabilidad de que ocurran ambos eventos a la vez:", round(P_A_n_B,2), "\n")
+```
+
+
+
+::: columns
+
+::: {.column width="45%"}
+Dado que se escoje un estudiante que tenga beca, ¿cuál es la probabilidad de que su promedio sea mayor a 16? 
+
+\n Rpta: 0.27
+$$
+P(A∣B)= \frac{P(A∩B)}{P(B)}
+$$
+:::
+
+::: {.column width="55%"}
+
+Independencia de eventos: $$P(A∩B)=P(A)×P(B)$$
+
+Si se cumple la formula los eventos son independientes. P(A n B) = 0.08, P(A) x P(B) =0.06 .  En este caso, no son independientes.
+:::
+
+:::
+
+---
+
+## Variables Aleatorias Discretas {.small}
+
+***Distribución Binomial***
+
+<span style="font-size: 90%;">**Si las personas que participaron en este primer estudio asisten a una competencia de conocimientos ¿Cuál es la probabilidad de que menos de 120 personas de la muestra tengan una beca como facilidad de estudio?**
+
+X : Número de personas que posean una beca en el conjunto de 441 participantes del estudio.
+
+P(exito) : Seleccionar un estudiante con beca.
+
+```{r}
+total <- nrow(DF)  
+personas_becadas <- sum(DF$facilidad_estudio == "Becado", na.rm = TRUE)  
+p_hat1 <- round(personas_becadas / total,2) 
+
+# Probabilidad de tener menos de 120 personas con beca
+pbionom_120 <- pbinom(120, size = total, prob = p_hat1)
+
+# Probabilidad
+cat("La probabilidad de exito:", round(p_hat1,2), "\n")
+cat("La probabilidad de tener menos de 120 personas becadas es:", pbionom_120)
+```
+<span style="font-size: 80%;">
+
+$$
+F(X) = pbinom(k,n,p)
+$$ **Donde:** k: k éxitos p: P(éxitos) n: intentos
+
+<span style="font-size: 90%;">La probabilidad de que 120 personas del total de participantes en el estudio sean becadas es F(X)= 0.1093576.</span>
+
+***Validación de Propiedades:***  <span style="font-size: 80%;">  La varianza es: σ^2^ = 92.49.     La esperanza es: μ = 132.</span>
+
+---
+
+## Variables Aleatorias Continuas {.small}
+
+::: columns
+::: {.column width="50%"}
+
+**Promedio Ponderado**
+
+```{r}
+# Calcular estadísticas descriptivas
+descriptores_promedio <- DF %>% summarise(
+  Media = mean(promedio_ponderado, na.rm = TRUE),
+  Mediana = median(promedio_ponderado, na.rm = TRUE),
+  Desviacion_Estandar = sd(promedio_ponderado, na.rm = TRUE)
+)
+
+# Crear gráficos de densidad
+hist(DF$promedio_ponderado, probability = TRUE, col = "lightgray", main = "DIstribucion de la variable Promedio Ponderado",
+     xlab = "promedio", ylab = "Densidad")
+
+# Agregar la curva normal teórica
+curve(dnorm(x, mean = descriptores_promedio$Media, sd = descriptores_promedio$Desviacion_Estandar), add = TRUE, col = "red", lwd = 2)
+
+
+```
+::: columns
+::: {.column width="45%"}
+
+```{r, echo=FALSE, eval=TRUE}
+cat("Media: ", descriptores_promedio$Media, "\n")
+
+```
+:::
+
+::: {.column width="45%"}
+
+
+```{r}
+cat("Desviación Estandar: ", descriptores_promedio$Desviacion_Estandar, "\n")
+
+
+```
+:::
+
+```{r}
+cat("probabilidad de que una persona tenga un promedio mayor a 15 y menor a 17: La probabilidad es del 32%, indicando que un gran grupo de estudiantes tiene un rendimiento alto en comparación al promedio.", "\n")
+cat("Conclusión: El promedio ponderado de los estudiantes es relativamente alto, con una media de 14.62, lo cual sugiere que los estudiantes están obteniendo buenas calificaciones. Además, una parte significativa de los estudiantes (casi un tercio) tiene un rendimiento que supera la media, lo cual se interpreta como un desempeño sobresaliente en comparación del resto.", "\n")
+```
+
+
+
+:::
+
+:::
+
+::: {.column width="50%"}
+
+
+**Horas de sueño**
+
+```{r}
+# Estadísticas descriptivas
+descriptores_hsueño <- DF %>% summarise(
+  Media = mean(horas_sueño, na.rm = TRUE),
+  Mediana = median(horas_sueño, na.rm = TRUE),
+  Desviacion_Estandar = sd(horas_sueño, na.rm = TRUE)
+)
+
+# Crear gráficos de densidad y Q-Q plots
+hist(DF$horas_sueño, probability = TRUE, col = "lightgray", main = "DIstribucion de la variable horas de sueño",
+     xlab = "horas de sueño", ylab = "Densidad")
+
+# Agregar la curva normal teórica
+curve(dnorm(x, mean = descriptores_hsueño$Media, sd = descriptores_hsueño$Desviacion_Estandar), add = TRUE, col = "red", lwd = 2)
+```
+::: columns
+
+::: {.column width="45%"}
+
+
+
+```{r}
+cat("Media: ", descriptores_hsueño$Media, "\n")
+
+```
+
+:::
+
+::: {.column width="45%"}
+
+
+```{r}
+cat("Desviación Estandar: ", descriptores_hsueño$Desviacion_Estandar, "\n")
+```
+:::
+
+```{r}
+cat("probabilidad de que una persona duerma entre 2 a 4 horas: La probabilidad es del 6%.", "\n")
+cat("Conclusion: Un promedio de 6 horas de sueño con una variabilidad moderada podría indicar que una buena parte del grupo duerme menos de las horas recomendadas, lo que potencialmente podría tener implicaciones negativas para la salud y el rendimiento académico si se mantieen a largo plazo.", "\n")
+```
+
+
+:::
+:::
+:::
+---
+## Conclusiones
+
+**Zona de Residencia:** Los estudiantes que residen en distritos de ingresos medios-altos (Santiago de Surco, San Borja, La Molina) tienden a tener un mayor número de créditos acumulados. Esto sugiere que las condiciones económicas y sociales del lugar de residencia pueden influir positivamente en el éxito académico.
+
+**Gasto en Alimentación: ** Aunque no existe una relación significativa entre el gasto semanal en alimentación y el promedio académico, se observa que estudiantes que gastan entre 200 y 300 soles tienden a obtener mejores promedios. Esto podría implicar que una inversión moderada en alimentación puede contribuir al rendimiento académico.
+
+**Facilidad de Estudio:** Tener una beca o crédito universitario no garantiza un rendimiento superior, pero sí parece ser un factor dependiente del promedio académico. Los estudiantes con beca tienden a obtener mejores resultados, lo que resalta la importancia del apoyo financiero.
