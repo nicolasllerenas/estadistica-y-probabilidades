@@ -1,0 +1,11 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+Texto plano termina linea con dos espacios para nuevo párrafo. *cursivo* y *cursivo*
+
+```{r}
+
+```
