@@ -1,0 +1,895 @@
+---
+title: "Semana 1 - Limpieza de datos"   # Título del documento
+author: "Nicolás Llerena"                 # Autor
+date: "09 de enero, 2026"               # Fecha de creación
+format: html                            # Formato principal de salida
+editor: visual                          # Editor visual (útil en Quarto)
+output:
+  html_notebook:
+    toc: yes                            # Activa tabla de contenido
+    toc_float:                          # Hace que la tabla de contenido flote
+       collapsed: yes                   # Se colapsa mostrando solo encabezados principales
+       smooth_scroll: no                # Desplazamiento directo (puedes poner "yes" si prefieres animación)
+    number_sections: yes                # Numera secciones y subsecciones automáticamente
+    theme: journal                      # Tema visual (puedes probar "cosmo", "flatly", "cerulean" para variar)
+  
+  html_document:
+    toc: yes                            # Activa tabla de contenido también en html_document
+    df_print: paged                     # Muestra dataframes en páginas (más ordenado si son grandes)
+---
+
+
+# Instalar librerias
+
+CTRL + ALT + i: Combinación de teclas para abrir un chunk.
+
+```{r}
+# install.packages("dplyr")  
+
+library(dplyr)  # Llamar la librería
+```
+
+
+# Cargar los datos
+
+## Desde un Excel
+
+```{r}
+rm(list = ls()) # Borra todos los values
+```
+
+
+```{r}
+library(readxl)  # Llama la librería que carga los datos desde un Excel
+Datos_Diversos <- read_excel("Datos_Diversos_Pasado.xlsx") # Cargar los datos
+head(Datos_Diversos)  # Llama las 6 primeras filas
+```
+
+## Desde un CSV
+
+Para comentar varias lineas a la vez, selecciono las lineas y presiono las teclas CTRL + mayùs + c
+
+```{r}
+# library(readr)
+# Datos_Diversos_Pasado <- read_csv("Datos_Diversos_Pasado.csv")
+# head(Datos_Diversos_Pasado)
+```
+
+# Revizar los datos
+
+## Resumen general de la tabla de datos
+
+El comando `str` devuelve un resumen del tipo de variable que asume RStudio.
+
+```{r}
+str(Datos_Diversos)
+```
+
+## Resumen de una sola variable
+
+Resumen de una variable cuantitativa o numérica
+
+```{r}
+summary(Datos_Diversos$Edad)
+```
+
+Resumen de una variable cualitativa
+
+```{r}
+table(Datos_Diversos$Sexo, useNA = "always")
+```
+
+## Revizar el inicio y el final de los datos
+
+```{r}
+# Lee las 6 primeras filas de la base de datos
+head(Datos_Diversos)
+```
+
+```{r}
+# Lee las 6 últimas filas de la base de datos
+tail(Datos_Diversos)
+```
+
+```{r}
+# Pedir ayuda al R
+help(mean)
+```
+
+# Limpieza de los datos
+
+## Datos incompletos / completos
+
+`is.na()`: Este comando detecta los datos incompletos (NA).\
+`sum`: Suma la cantidad de datos incompletos.\
+`!`: Es el operador negación
+
+TRUE = 1\
+FALSE = 0
+
+```{r}
+TRUE + 1
+FALSE + 1
+```
+
+```{r}
+TRUE + TRUE
+TRUE + FALSE
+```
+
+```{r}
+!FALSE
+```
+
+```{r}
+# Cantidad de datos nulos (NA) /incompletos
+sum(is.na(Datos_Diversos))
+```
+
+```{r}
+# Cantidad de datos COMPLETOS
+sum(!is.na(Datos_Diversos))
+```
+
+```{r}
+# Datos incompletos + datos COMPLETOS
+sum(is.na(Datos_Diversos)) + sum(!is.na(Datos_Diversos))
+1099 * 20
+```
+
+## Columna o variable con datos completos / imcompletos
+
+```{r}
+# Datos incompletos 
+sum(is.na(Datos_Diversos$Edad))
+```
+
+```{r}
+# Datos COMPLETOS
+sum(!is.na(Datos_Diversos$Edad))
+```
+
+## Filas (observaciones o casos) completos / imcompletos
+
+```{r}
+# Cantidad de casos o filas completas
+sum(complete.cases(Datos_Diversos))
+```
+
+```{r}
+# Cantidad de casos o filas INcompletas
+sum(!complete.cases(Datos_Diversos))
+```
+
+## Criterios para limpieza de datos
+
+**¿Qué hacer si encontramos una casilla vacía o *(N/A)* o caso incompleto o NULL?**
+
+-   Eliminar a la observación que no sea un **caso completo**. La desventaja es que se puede perder información de otras variables que si son importantes, además de incrementar ligeramente el sesgo ya existente.
+
+-   Ver cual es la variable o columna que tiene la mayor cantidad de datos incompletos y eliminarlo
+
+-   Re-consultar la fuente y completar la información con el valor verídico.
+
+-   **No se debe** completar la información a criterio o al azar, pues se estaría manipulando intencionalmente la información, lo cual no es éticamente correcto.
+
+**¿Qué hacer si encontramos una casilla con un valor evidentemente erróneo?**
+
+-   Eliminar la observación (*ya se explicó sus desventajas*), depende de la cantidad de estas observaciones.
+
+-   Corregir el valor, por el adecuado; para esto podemos consultar con la fuente original (**es lo ideal**), o corregirlo a criterio siempre y cuando el error sea **muy evidente**.
+
+## Librería dplyr
+
+-   Paquete con pocas funciones pero muy poderosas para ordenar datos
+
+-   Parte del tidyverse (Colección de paquetes disponibles en R y orientados a la **manipulación, importación, exploración y visualización de datos**, que se utiliza exhaustivamente en ciencia de datos)
+
+    -   **rename**: Cambia los nombre de las columnas de una base.
+
+    -   **group_by**: (agrupa datos)
+
+    -   **summarize**: (resume datos agrupados)
+
+    -   **filter**: (Encuentra filas con ciertas condiciones)
+
+    -   **select**: junto a **starts_with, ends_with o contains**, selecciona columnas.
+
+    -   **mutate**: (Genera variables nuevas).
+
+    -   **%>%**: pipeline es un operador (CTRL + SHIFT + m)
+
+    -   **arrange**: ordenar
+
+```{r}
+# install.packages("dplyr")   # Instala una librería
+library(dplyr)                # Llamar la librería
+```
+
+### Funcion "rename"
+
+Cambia los nombre de las columnas de una base de datos.
+
+`rename(base_datos, nombrenuevo1 = nombreviejo1, nombrenuevo2 = nombreviejo2, ... )`
+
+```{r}
+# Listando los encabezados
+names(Datos_Diversos)
+```
+
+```{r}
+Datos_Diversos_rename <- rename(Datos_Diversos,  # Tabla de datos
+                                Periodo = Período
+                                ,Codigo = Código
+                                ,Seccion = Sección
+                                ,Estatura = "Estatura (cm)"
+                                ,Peso = "Peso (kg)"  
+                                ,Signo = "Signo del zodiaco"
+                                ,Tiempo = "Tiempo de reacción" 
+                                ,Videojuegos = "Juega videojuegos"
+                                ,Deporte = "Hace deporte" 
+                                ,Color = "Color favorito"  
+                                ,Calzado = "Talla de zapato" 
+                                ,Polo = "Talla de polo" 
+                                 )
+```
+
+```{r}
+names(Datos_Diversos_rename)
+```
+
+
+### Funcion "select"
+
+-   Permite ir rápidamente a un subconjunto mediante operaciones basadas en el nombre de las variables.
+-   Es útil si se tiene data con muchas variables.
+
+`select(base_datos, variables_a_seleccionar)`
+
+```{r}
+head(Datos_Diversos_rename)
+```
+
+
+```{r}
+# Forma de selección 1
+head(select(Datos_Diversos_rename, Periodo, Edad, Ciclo))
+```
+
+Con Pipe `%>%` o `|>` 
+CTRL + SHIFT + m
+
+`````{r}
+select(Datos_Diversos_rename, Periodo, Edad, Ciclo) |>  # 1. Aplico la función select
+  head()    # 2. Selecciono las primeras 6 filas                            
+`````
+
+
+```{r}
+# Forma de selección 2
+select(Datos_Diversos_rename, 1, 2, 3, 4) |> 
+  head()
+```
+
+```{r}
+# Forma de selección 3
+select(Datos_Diversos_rename, Periodo:Nombre) |>    # Selecciono desde Periodo HASTA Nombre
+  head()
+```
+
+```{r}
+# Forma de selección 4
+select(Datos_Diversos_rename, 1:4) |>   # Selecciono desde la columna 1 HASTA el 4.
+  head()
+```
+
+```{r}
+# Forma de selección 5: Selecciono toda la tabla, menos la columna 2.
+select(Datos_Diversos_rename, -2) |> 
+  head()
+```
+
+```{r}
+select(Datos_Diversos_rename, 1:18) |> 
+  head()
+# select(Datos_Diversos_rename, c(-19,-20))
+```
+
+```{r}
+Datos_Diversos_rename <- select(Datos_Diversos_rename, 1:18) # "Eliminando" la columna 19 y 20 (vacías)
+names(Datos_Diversos_rename)
+```
+
+```{r}
+# Filas completas
+sum(complete.cases(Datos_Diversos_rename))
+```
+
+```{r}
+# Filas INcompletas
+sum(!complete.cases(Datos_Diversos_rename))
+```
+
+### Seleccionar columnas/variables por coincidencia o patrones
+
+El comando **select** tiene potencia en base de datos cuyas variables tienen algún patrón en común, en esos casos se pueden utilizar los argumentos:
+
+-   Patrón 1: `starts_with("...")`, Variables que comienzan con ...
+
+-   Patrón 2: `ends_with("...")`, Variables que terminan con ...
+
+-   Patrón 3: `contains("...")`, Variables que contienen ...
+
+```{r}
+# Patrón 1
+select(Datos_Diversos_rename, starts_with("c")) |> 
+  head()
+```
+
+```{r}
+# Patrón 2
+select(Datos_Diversos_rename, ends_with("do")) |> 
+  head()
+```
+
+```{r}
+# Patron 3
+select(Datos_Diversos_rename, contains("po")) |> 
+  head()
+```
+
+### Función "filter"
+
+`filter(base_datos, condición)`
+
+-   Permite crear o seleccionar subconjuntos de la base con base al resultado de sus variables.
+
+-   Algunos operadores numéricos para este argumento son:
+
+    -   `>`, `<` mayor que, y menor que
+
+    -   `>=`, `=<` mayor o igual que, y menor o igual que
+
+    -   `!=`, diferente a
+
+    -   `==`, igual a
+
+-   También puede utilizar operadores booleanos como:
+
+    -   `&` and (Intercepción)
+
+    -   `|` or (Unión)
+
+    -   `!` no o negacion
+
+**Ejercicio 1**: Seleccionar personas o filas de la sección 11.
+
+```{r}
+filter(Datos_Diversos_rename, Seccion=="11")
+```
+
+**Ejercicio 2**: Seleccionar personas con edad mayor e igual a 28.
+
+```{r}
+filter(Datos_Diversos_rename, Edad>=28)
+```
+
+**Ejercicio 3**: Seleccionar personas que sean del signo piscis.
+
+```{r}
+# unique: Esta función me permite ver todas las opciones únicas de una variable
+unique(Datos_Diversos_rename$Signo)
+```
+
+```{r}
+filter(Datos_Diversos_rename
+       ,Signo=="pisics" | Signo=="Pisicis" | Signo=="Picis" | Signo=="Pisis" | Signo=="piscis")
+```
+
+
+**Ejercicio 4**: Seleccionar personas que sean del signo piscis con edades de 18 o 21 anios.
+
+```{r}
+# Forma 1
+filter(Datos_Diversos_rename
+       ,Signo=="pisics" | Signo=="Pisicis" | Signo=="Picis" | Signo=="Pisis" | Signo=="piscis"
+       ,Edad==18 | Edad==21)
+```
+
+El argumento `%in%` el cual funciona como una reducción de varios operadores lógicos `or`. Para estructuras más complejas recomiendo utilizar la segunda forma.
+
+```{r}
+#Forma 2
+filter(Datos_Diversos_rename,
+      Signo %in% c("pisics", "Pisicis", "Picis", "Pisis", "piscis"),
+      Edad %in% c(18,21)
+      )
+```
+
+# Limpieza de los datos
+
+Cantidad de casos o filas completas
+
+```{r}
+sum(complete.cases(Datos_Diversos_rename))
+```
+
+Cantidad de NA o datos vacíos en cada columna
+
+```{r}
+colSums(is.na(Datos_Diversos_rename))
+```
+
+Porcentaje de registros NA
+
+```{r}
+sum(is.na(Datos_Diversos_rename))/(ncol(Datos_Diversos_rename)*nrow(Datos_Diversos_rename))*100
+```
+
+El 10.07% de los registros son NA
+
+Eliminando la columna 19 y 20, porque tiene casi todos sus registros NA
+
+```{r}
+Datos_Diversos_2 <- select(Datos_Diversos_rename , 1:18)
+```
+
+Porcentaje de registros NA, Datos_Diversos_2
+
+```{r}
+sum(is.na(Datos_Diversos_2))/(ncol(Datos_Diversos_2)*nrow(Datos_Diversos_2))*100
+```
+
+El 10.07987% de los registros son NA.
+
+Tamaño de **muestra efectiva** por variable en `Datos_Diversos_2`
+
+```{r}
+# Tabla
+tabla_ME <-colSums(!is.na(Datos_Diversos_2))
+tabla_ME
+```
+
+```{r}
+# Gráfico de barras
+barplot( tabla_ME
+        ,main = "Muestra efectiva por variable"
+        ,ylab = "Frecuencia"
+        ,las = 3    # Sentido vertical del los nombres del eje x
+        ,cex.names = 0.8  #Tamaño de las etiquetas en el eje x
+        ,horiz = FALSE
+        ,col = c("black","gold4",3,4,5,6,7,8,"orange","#8B2500",11,12,13,14,"#9932CC","#8B814C","green","#FF3030")
+)
+```
+
+**Paleta de colores**:\
+
+https://r-charts.com/es/colores/  
+https://myrbooksp.netlify.app/graph2.html
+
+Hallando el porcentaje de casos o filas completas
+
+```{r}
+round(sum(complete.cases(Datos_Diversos_2)) / nrow(Datos_Diversos_2) *100 ,2)
+```
+
+El 43.13% de los filas están completas.
+
+## Sexo
+
+```{r}
+table(Datos_Diversos_2$Sexo, useNA = "always")
+```
+
+Aquí podríamos intentar corregir algunos errores, siempre y cuando estemos claros que estamos haciendo manipulación de datos.
+
+```{r}
+Datos_Diversos_2$Sexo[Datos_Diversos_2$Sexo == "mM"] <- "M"
+Datos_Diversos_2$Sexo[Datos_Diversos_2$Sexo == "m"] <- "M"
+Datos_Diversos_2$Sexo[Datos_Diversos_2$Sexo == "NB"] <- "M"
+Datos_Diversos_2$Sexo[Datos_Diversos_2$Sexo == 70] <- "M"
+```
+
+```{r}
+filter(Datos_Diversos_2, Sexo == "70")
+```
+
+```{r}
+table(Datos_Diversos_2$Sexo, useNA = "always")
+```
+
+```{r}
+table(Datos_Diversos_2$Sexo)
+```
+
+```{r}
+# Diagrama de barras
+barplot(
+  table(Datos_Diversos_2$Sexo),     # Conteo de cada categoría
+  ylab = "Frecuencia",              # Etiqueta del eje Y
+  xlab = "Sexo",                    # Etiqueta del eje X
+  main = "Distribución de Sexo",    # Título del gráfico
+  col = c("red", "yellow"),         # Colores de las barras
+  border = "black"                  # Bordes de las barras
+)
+```
+
+
+```{r}
+# Grafico de Pie
+pie(
+  table(Datos_Diversos_2$Sexo),              # Conteo de cada categoría
+  col = c("red", "yellow"),            # Colores más agradables
+  main = "Distribución de Sexo",             # Título del gráfico
+  labels = paste0(
+    names(table(Datos_Diversos_2$Sexo)),     # Etiquetas (M, F, etc.)
+    " (", round(100 * prop.table(table(Datos_Diversos_2$Sexo)), 1), "%)"
+  )
+)
+
+```
+
+## Estatura (cm)
+
+```{r}
+summary(Datos_Diversos_2$Estatura)
+```
+
+
+```{r}
+# Histograma: Grafico para variables cuantitativas continuas
+hist(Datos_Diversos_2$Estatura)
+```
+
+Revisando a los "enanitos"
+
+```{r}
+# Cantidad de personas con estatura menor a 50 cm.
+sum(Datos_Diversos_2$Estatura < 50, na.rm = T)
+```
+
+```{r}
+Datos_Diversos_2$Estatura[Datos_Diversos_2$Estatura < 50  & !is.na(Datos_Diversos_2$Estatura)] <- Datos_Diversos_2$Estatura[Datos_Diversos_2$Estatura < 50  & !is.na(Datos_Diversos_2$Estatura)]*100
+```
+
+```{r}
+summary(Datos_Diversos_2$Estatura)
+```
+
+```{r}
+sum(Datos_Diversos_2$Estatura > 250, na.rm = T)
+```
+
+```{r}
+Datos_Diversos_2$Estatura[Datos_Diversos_2$Estatura == 300] <- NA
+Datos_Diversos_2$Estatura[Datos_Diversos_2$Estatura == 120] <- NA
+```
+
+```{r}
+summary(Datos_Diversos_2$Estatura)
+```
+
+```{r}
+hist(Datos_Diversos_2$Estatura)
+```
+
+## Signo
+
+```{r}
+# Tabla ordenada
+table(Datos_Diversos_2$Signo, useNA = "always") |> 
+  sort(decreasing = TRUE)
+```
+
+Ordenar la tabla por orden de frecuencia nos permite atacar los problemas más grandes primero.
+
+Vamos a hacer la limpieza con cuidado, trabajando primero sobre una copia y actualizando los cambios cuando estemos seguros.
+
+```{r}
+# Creando una copia
+signo_limpio <- Datos_Diversos_2$Signo
+```
+
+Cantidad de signos
+
+```{r}
+# Cantidad de valores que tiene la variable
+length(unique(signo_limpio))
+```
+
+```{r}
+# Reemplaza las vocales con acento por sin acento
+signo_limpio <- chartr("áéíóú", "aeiou", signo_limpio)
+length(unique(signo_limpio))
+```
+
+```{r}
+# Convertir todo a minúscula
+signo_limpio <- tolower(signo_limpio)
+length(unique(signo_limpio))
+```
+
+```{r}
+sort(table(signo_limpio, useNA = "always"), decreasing = T)
+```
+
+```{r}
+# Buscar usando patrones de palabras
+unique(signo_limpio[grep("escor", signo_limpio)])
+```
+
+```{r}
+signo_limpio[grep("pis", signo_limpio)] <- "piscis"
+signo_limpio[grep("cap", signo_limpio)] <- "capricornio"
+signo_limpio[grep("leo", signo_limpio)] <- "leo"
+signo_limpio[grep("escor", signo_limpio)] <- "escorpio"
+```
+
+```{r}
+# Reemplazo usando valores puntuales o específicos
+signo_limpio[signo_limpio == "ofiuco"] <- NA
+signo_limpio[signo_limpio == "desconocido"] <- NA
+signo_limpio[signo_limpio == 170] <- NA
+signo_limpio[signo_limpio == "-"] <- NA
+signo_limpio[signo_limpio == "sagitatio"] <- "sagitario"
+signo_limpio[signo_limpio == "arias"] <- "aries"
+signo_limpio[signo_limpio == "picis"] <- "piscis"
+signo_limpio[signo_limpio == "gemenis"] <- "geminis"
+```
+
+```{r}
+signo_limpio[is.na(signo_limpio)] <- "SinDatos"
+```
+
+```{r}
+# Comprobando
+ sort(table(signo_limpio, useNA = "always"), decreasing = T)
+```
+
+```{r}
+tabla_signo <- sort(round(prop.table(table(signo_limpio))*100, 2), decreasing = T)
+tabla_signo
+```
+
+```{r}
+# Crear gráfico de barras con tabla de frecuencias de signos
+barras <- barplot(
+  tabla_signo,
+  las = 2,                      # Rotación de etiquetas eje X (2 = vertical, más legible que 3)
+  cex.names = 0.9,              # Tamaño de etiquetas en eje X
+  cex.axis = 0.9,               # Tamaño de valores en eje Y
+  ylab = "Observaciones",       # Etiqueta eje Y
+  main = "Distribución de signos del zodiaco", # Título más descriptivo
+  ylim = c(0,12),
+  col = rainbow(length(tabla_signo)), # Colores automáticos y diferenciables
+  border = "gray"               # Bordes más suaves
+)
+
+# Añadir etiquetas de frecuencia sobre cada barra
+text(
+  x = barras,
+  y = tabla_signo,
+  labels = tabla_signo,
+  cex = 0.8,
+  pos = 3,                      # Posición arriba de la barra (más claro que pos=1)
+  col = "black"                 # Color de texto más legible
+)
+
+```
+
+```{r}
+# Reemplazando la variable Signo por los datos corregidos
+Datos_Diversos_2$Signo <- signo_limpio
+table(Datos_Diversos_2$Signo)
+```
+
+----- NOS QUEDAMOS AQUI --------
+
+## Carrera
+
+Total de carreras llenadas por los alumnos
+
+```{r}
+length(table(Datos_Diversos_2$Carrera))
+```
+
+Considerando que UTEC tiene cerca de 12 carreras, podemos ver que tenemos un problema.
+
+```{r}
+unique(Datos_Diversos_2$Carrera)
+```
+
+```{r}
+sort(table(Datos_Diversos_2$Carrera, useNA = "always"), decreasing = T)
+```
+
+Ordenara la tabla por orden de frecuencia nos permite atacar los problemas más grandes primero.
+
+Vamos a hacer la limpieza con cuidado, trabajando primero sobre una copia y actualizando los cambios cuando estemos seguros.
+
+Convirtiendo todo en minúscula usando la función `tolower`
+
+```{r}
+CarreraLimpia <- Datos_Diversos_2$Carrera
+CarreraLimpia <- tolower(CarreraLimpia)  #Convirtiendo todo en minúscula
+length(table(CarreraLimpia))
+```
+
+Hemos disminuido el numero de carreras.
+
+Vamos a quitar todas las tildes y las colocaremos correctamente más tarde. Para eso usaremos la función `chartr`.
+
+```{r}
+CarreraLimpia <- chartr("áéíóú", "aeiou", CarreraLimpia)
+length(table(CarreraLimpia))
+```
+
+Hemos disminuido las carreras un mas
+
+```{r}
+sort(table(CarreraLimpia, useNA = "always"), decreasing = T)
+```
+
+Ahora vamos a usar la función `grep` para corregir patrones un poco más complicados.
+
+La función `grep` y sus variantes como `gsub` trabajan con expresiones regulares para encontrar patrones interesantes en las cadenas de caracteres.
+
+Hay que saber un poco sobre expresiones regulares. Revisar la ayuda de `grep` para más información.
+
+```{r}
+unique(CarreraLimpia[grep("^ing.*[\\.\\ ,]", CarreraLimpia)])
+```
+
+Hay casos de carreras que comienzan por las letras "ing" y eventualmente llegan a un espacio, un punto o una coma.
+
+```{r}
+unique(gsub("^ing*[\\.\\,]", "", CarreraLimpia))
+```
+
+```{r}
+CarreraLimpia <- gsub("^ing.*[\\.\\,]", "", CarreraLimpia)
+length(table(CarreraLimpia, useNA = "always"))
+```
+
+```{r}
+length(table(CarreraLimpia, useNA = "always"))
+```
+
+Hemos reducido mas las carreras.
+
+```{r}
+sort(table(CarreraLimpia, useNA = "always"), decreasing = T)
+```
+
+Identifico el patrón
+
+```{r}
+unique(CarreraLimpia[grep("comput", CarreraLimpia)])
+```
+
+```{r}
+CarreraLimpia[grep("bio", CarreraLimpia)] <- "bioingenieria"
+CarreraLimpia[grep("comput", CarreraLimpia)] <- "ciencia de la computacion"
+CarreraLimpia[grep("elec", CarreraLimpia)] <- "electronica"
+CarreraLimpia[grep("ambie", CarreraLimpia)] <- "ambiental"
+CarreraLimpia[grep("mecan", CarreraLimpia)] <- "mecanica"
+CarreraLimpia[grep("civi", CarreraLimpia)] <- "civil"
+CarreraLimpia[grep("mecat", CarreraLimpia)] <- "mecatronica"
+CarreraLimpia[grep("energ", CarreraLimpia)] <- "energia"
+CarreraLimpia[grep("quimi", CarreraLimpia)] <- "quimica"
+CarreraLimpia[grep("indu", CarreraLimpia)] <- "industrial"
+CarreraLimpia[grep("datos", CarreraLimpia)] <- "ciencia de datos"
+CarreraLimpia[grep("meatronica", CarreraLimpia)] <- "mecatronica"
+```
+
+Reemplazar usando palabras puntuales
+
+```{r}
+CarreraLimpia[CarreraLimpia == "cs"] <- "ciencia de la computacion"
+CarreraLimpia[CarreraLimpia == "leo"] <- NA
+#CarreraLimpia[CarreraLimpia == ""] <- NA
+```
+
+Comprobar el avance de los reemplazos
+
+```{r}
+length(table(CarreraLimpia, useNA = "always"))
+sort(table(CarreraLimpia, useNA = "always"), decreasing = T)
+```
+
+Aparentemente la variable Carrera estaría limpia.
+
+Veamos que las cosas quedaron bien:
+
+```{r}
+DataPrueba <- data.frame(Datos_Diversos_2$Carrera, CarreraLimpia)
+DataPrueba
+```
+
+```{r}
+tablaCarr <- sort(table(CarreraLimpia, useNA = "always"), decreasing = T)
+tablaCarr
+```
+
+```{r}
+GrafBarras <- barplot(tablaCarr
+                      ,las = 3
+                      ,cex.names = 0.8
+                      ,cex.axis = 0.8
+                      ,ylab = "Observaciones"
+                      ,main = "Carreras - Datos diversos"
+                      ,col = c(rep("gray",10),"red")
+                      ,ylim = c(0,230)    )
+              
+text(x=GrafBarras
+     ,y=tablaCarr
+     ,label = tablaCarr
+     ,cex = 0.8
+     ,col = "brown"
+     ,pos = 3)
+
+legend("topright"
+       ,legend = c("Datos completos","Datos vacios")
+       ,fill = c("gray","red")
+       ,bty = "n"
+       ,cex = 0.8  )
+```
+
+Podemos suponer que la variable `Carrera` está suficientemente limpia y oficializamos los cambios.
+
+```{r}
+Datos_Diversos_2$Carrera <- CarreraLimpia
+table(Datos_Diversos_2$Carrera, useNA = "always")
+```
+
+```{r}
+Datos_Diversos_2 <- mutate_at(Datos_Diversos_2, c("Carrera"), ~replace(.,is.na(.), "SinDatos")) #Renombra los NA
+table(Datos_Diversos_2$Carrera, useNA = "always")
+```
+
+## Variable Peso
+
+Convirtiendo la variable de `chr` a `num`
+
+```{r}
+str(Datos_Diversos_2)
+```
+
+```{r}
+unique(Datos_Diversos_2$Peso)
+```
+
+```{r}
+Datos_Diversos_2$Peso[Datos_Diversos_2$Peso == "90k"] <- 90
+unique(Datos_Diversos_2$Peso)
+```
+
+```{r}
+str(Datos_Diversos_2$Peso)
+```
+
+```{r}
+Datos_Diversos_2$Peso <- as.numeric(Datos_Diversos_2$Peso)
+str(Datos_Diversos_2$Peso)
+```
+
+## Variable Codigo
+
+Convirtiendo la variable de `mun` a `chr`
+
+```{r}
+Datos_Diversos_2$Codigo <- as.character(Datos_Diversos_2$Codigo)
+str(Datos_Diversos_2)
+```
+
+# Eliminando los NA
+
+```{r}
+sum(is.na(Datos_Diversos_2$Codigo))
+```
+
+```{r}
+library(dplyr)
+Datos_Diversos_3 <- filter(Datos_Diversos_2, is.na(Codigo) == FALSE)
+sum(is.na(Datos_Diversos_3$Codigo))
+```

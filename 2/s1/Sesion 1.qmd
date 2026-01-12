@@ -1,0 +1,62 @@
+---
+title: "Sesión 1"
+format: html
+editor: visual
+---
+
+# Markdown
+
+## Encabezado 2
+
+### Encabezado 3
+
+#### Encabezado 4
+
+##### Encabezado 5
+
+###### Encabezado 6
+
+# Encabezado 2
+
+Texto plano\
+Termina linea con dos espacios para nuevo párrafo.\
+*cursivo* y *cursivo*\
+**negr ita** y **negrita**\
+superíndice^2^\
+~~tachado~~\
+[eslabón](www.rstudio.com)
+
+| Encabezado Tabla | Segundo Encabezado |
+|------------------|--------------------|
+| Celda de tabla   | Celda 2            |
+| Celda 3          | Celda 4            |
+
+| Col1 | Col2 | Col3 |
+|------|------|------|
+| g    | gg   |      |
+| g    | g    | g    |
+|      |      |      |
+
+# Latex
+
+$$
+\Large t_{1/2} = \frac{\ln(2)}{\lambda}
+$$
+
+$$\Large \Phi(z) = P(Z \leq z) = \int_{-\infty}^{z} \frac{1}{\sqrt{2\pi}} e^{-\frac{t^2}{2}} dt$$
+
+La formula de Pitagoras es: $c^2=a^2+b^2$. Continua
+
+# Chunk
+
+CTRL + ALT + i
+
+```{r}
+a=2
+b=3
+a+b
+```
+
+```{r}
+plot(cars  )
+```
